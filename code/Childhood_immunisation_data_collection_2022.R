@@ -1,5 +1,5 @@
 # Loading some packages 
-packages <- c('easypackages', 'tidyr', 'ggplot2', 'dplyr', 'scales', 'readxl', 'readr', 'purrr', 'stringr', 'rgdal', 'spdplyr', 'geojsonio', 'rmapshaper', 'jsonlite', 'rgeos', 'sp', 'sf', 'maptools', 'ggpol', 'magick', 'officer', 'leaflet', 'leaflet.extras', 'zoo', 'fingertipsR', 'PostcodesioR', 'ggrepel', 'readODS', 'openxlsx')
+packages <- c('easypackages', 'tidyr', 'ggplot2', 'dplyr', 'scales', 'readxl', 'readr', 'purrr', 'stringr', 'rgdal', 'spdplyr', 'geojsonio', 'rmapshaper', 'jsonlite', 'rgeos', 'sp', 'sf', 'maptools', 'ggpol', 'magick', 'officer', 'leaflet', 'leaflet.extras', 'zoo', 'fingertipsR', 'PostcodesioR', 'ggrepel', 'readODS', 'openxlsx',  'httr', 'rvest')
 install.packages(setdiff(packages, rownames(installed.packages())))
 easypackages::libraries(packages)
 
@@ -84,31 +84,10 @@ download.file('https://assets.publishing.service.gov.uk/government/uploads/syste
               mode = 'wb')
 }
 
-# 2021/22 - quarterly build up
-
-# Pooling the quarterly data ####
-
-if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202122_Q1.ods')) != TRUE){
-  download.file('https://webarchive.nationalarchives.gov.uk/ukgwa/20211123180403mp_/https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1020965/COVER_GP_Q1_2021_22.ods',
-                paste0(data_directory, '/Child_immunisation_GP_202122_Q1.ods'),
-                mode = 'wb')
-}
-
-if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202122_Q2.ods')) != TRUE){
-  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1065456/hpr2021_COVER_exprmntl-gp-data.ods',
-                paste0(data_directory, '/Child_immunisation_GP_202122_Q2.ods'),
-                mode = 'wb')
-}
-
-if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202122_Q3.ods')) != TRUE){
-  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1080096/cover-gp-q3-2021-to-2022_v2.0.ods',
-                paste0(data_directory, '/Child_immunisation_GP_202122_Q3.ods'),
-                mode = 'wb')
-}
-
-if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202122_Q4.ods')) != TRUE){
-  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1101021/cover-gp-q4-2021-to-2022_v2.ods',
-                paste0(data_directory, '/Child_immunisation_GP_202122_Q4.ods'),
+# 2021/22
+if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202122.ods')) != TRUE){
+  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1133076/cover-gp-annual-2021-to-2022.ods',
+                paste0(data_directory, '/Child_immunisation_GP_202122.ods'),
                 mode = 'wb')
 }
 
@@ -119,6 +98,16 @@ if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202223_Q1.ods')) !
                 paste0(data_directory, '/Child_immunisation_GP_202223_Q1.ods'),
                 mode = 'wb')
 }
+
+if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202223_Q2.ods')) != TRUE){
+  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1125609/GP_COVER.ods',
+                paste0(data_directory, '/Child_immunisation_GP_202223_Q2.ods'),
+                mode = 'wb')
+}
+
+# Next set of data is due to be released 28th March, with Q4 in June 2023, annual data due 1st September 2023 
+
+# https://www.gov.uk/government/publications/vaccine-coverage-statistics-publication-dates/cover-vaccine-coverage-data-submission-and-publication-schedule
 
 # UTLA data ####
 
@@ -145,29 +134,180 @@ if(file.exists(paste0(data_directory, '/Child_immunisation_LA_202122.xlsx')) != 
                 mode = 'wb')
 }
 
+# 2022/23 Quarterly
 if(file.exists(paste0(data_directory, '/Child_immunisation_LA_202223_Q1.ods')) != TRUE){
   download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1106445/hpr1022_COVER-data-tables.ods',
                 paste0(data_directory, '/Child_immunisation_LA_202223_Q1.ods'),
                 mode = 'wb')
 }
 
-# pool 2021/22 data
+if(file.exists(paste0(data_directory, '/Child_immunisation_LA_202223_Q2.ods')) != TRUE){
+  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1125667/Quarterly-vaccination-coverage-statistics-July-September-2022.ods',
+                paste0(data_directory, '/Child_immunisation_LA_202223_Q2.ods'),
+                mode = 'wb')
+}
 
-# V81999 is used as the code where the GP practice is unknown. Unregistered children are allocated to a CCG based on residence.
+Vaccination_terms_df <- data.frame(Item = c('DTaPIPVHibHepB', 'MenB', 'PCV1', 'PCV2', 'Rota', 'DTaP/IPV/Hib(Hep)', 'MMR1', 'Hib/MenC', 'PCV Booster', 'MenB Booster', 'DTaP/IPV/Hib', 'DTaPIPV', 'MMR2'), Term = c('DTaP/IPV/Hib/HepB vaccine (Diptheria, tetanus, pertussis, polio, haemophilus influenzae type B and hepatitis B), known as hexavalent vaccine or 6-in-1', 'Meningococcal group B disease vaccine', 'Pneumococcal conjulate vaccine (first dose by 12 weeks)', 'Pneumococcal conjulate vaccine (first dose by 12 weeks)', 'Rotavirus vaccine (primary course, with first dose at 8 weeks and second at 12 weeks)', 'DTaP/IPV/Hib/HepB vaccine (Diptheria, tetanus, pertussis, polio, haemophilus influenzae type B and hepatitis B), known as hexavalent vaccine or 6-in-1; three doses at any time by second birthday', 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Pneumococcal conjulate disease booster vaccine; dose by second birthday', 'Meningococcal group B disease booster vaccine; completed by fifth birthday', 'DTaP/IPV/Hib/HepB vaccine (Diptheria, tetanus, pertussis, polio, haemophilus influenzae type B and hepatitis B), known as hexavalent vaccine or 6-in-1; completing booster dose by fifth birthday', 'pre-school diphtheria, tetanus, acellular pertussis and polio (DTaP/IPV) booster; completing booster dose by fifth birthday', 'Measles, mumps, and rubella booster vaccine; second dose by 3 years and 4 months or soon after'))
 
-Q1_2122 <- read_ods(paste0(data_directory, '/Child_immunisation_GP_202122_Q4.ods'),
-                    sheet = 'Table_1',
-                    skip = 2) %>% 
-  rename(ODS_Code = 'GP code') %>% 
-  filter(`CCG name` == 'NHS West Sussex CCG') %>% 
-  filter(ODS_Code != 'V81999')  %>% 
+Vaccination_terms_df %>% 
+  toJSON() %>% 
+  write_lines(paste0(output_directory, '/vaccination_terms.json'))
+
+# Annual data files ####
+GP_201920_df_raw <- read_ods(paste0(data_directory, '/Child_immunisation_GP_201920.ods'),
+         sheet = 'Table_1',
+         skip = 3) 
+
+GP_201920_df_raw_1 <- GP_201920_df_raw %>% 
+  rename(ODS_Code = 'GPCode') %>% 
+  filter(CCGName %in% c('NHS West Sussex CCG', 'NHS COASTAL WEST SUSSEX CCG', 'NHS CRAWLEY CCG', 'NHS HORSHAM AND MID SUSSEX CCG')) %>%
   select(ODS_Code, `12m Denominator`, `24m Denominator`, `5y Denominator`) %>% 
   pivot_longer(cols = 2:ncol(.),
                names_to = 'Age',
                values_to = 'Denominator') %>% 
-  mutate(Age = ifelse(Age == '12m Denominator', '12 months',  ifelse(Age == '24m Denominator', '24 months', ifelse(Age == '5y Denominator', '5 years', Age))))
-  
+  mutate(Age = ifelse(Age == '12m Denominator', '12 months',  ifelse(Age == '24m Denominator', '24 months', ifelse(Age == '5y Denominator', '5 years', Age)))) %>% 
+  mutate(Denominator = as.numeric(Denominator))
 
+GP_201920_df <- GP_201920_df_raw %>% 
+  rename(ODS_Code = 'GPCode') %>% 
+  filter(CCGName %in% c('NHS West Sussex CCG', 'NHS COASTAL WEST SUSSEX CCG', 'NHS CRAWLEY CCG', 'NHS HORSHAM AND MID SUSSEX CCG')) %>%
+  select(!c(CCGCode, CCGName, ODSLAUA,`12m Denominator`, `24m Denominator`, `5y Denominator`)) %>%
+  pivot_longer(cols = 2:ncol(.),
+               names_to = 'Item',
+               values_to = 'Proportion') %>% 
+  mutate(Age = ifelse(str_detect(Item, '^12m'), '12 months', ifelse(str_detect(Item, '^24m'), '24 months', ifelse(str_detect(Item, '^5y'),'5 years', NA)))) %>% 
+  mutate(Item = str_trim(side = 'both', gsub('12m', '', gsub('24m', '', gsub('5y', '', gsub('%','', Item)))))) %>% 
+  left_join(GP_201920_df_raw_1, by = c('ODS_Code', 'Age')) %>% 
+  left_join(Vaccination_terms_df, by = 'Item') %>% 
+  mutate(Proportion = Proportion / 100) %>% 
+  mutate(Numerator = Denominator * Proportion) %>% 
+  mutate(Year = '2019/20') %>% 
+  mutate(Benchmark = factor(ifelse(Denominator == 0, 'No eligible patients', ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)'))), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  select(Year, ODS_Code, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark)
+  
+rm(GP_201920_df_raw, GP_201920_df_raw_1)
+
+# 2020/21
+GP_202021_df_raw <- read_ods(paste0(data_directory, '/Child_immunisation_GP_202021.ods'),
+                             sheet = 'Table_1',
+                             skip = 2) 
+
+GP_202021_df_raw_1 <- GP_202021_df_raw %>% 
+  rename(ODS_Code = 'GP code') %>% 
+  filter(`CCG name` %in% c('NHS West Sussex CCG', 'NHS COASTAL WEST SUSSEX CCG', 'NHS CRAWLEY CCG', 'NHS HORSHAM AND MID SUSSEX CCG')) %>%
+  select(ODS_Code, `12m Denominator`, `24m Denominator`, `5y Denominator`) %>% 
+  pivot_longer(cols = 2:ncol(.),
+               names_to = 'Age',
+               values_to = 'Denominator') %>% 
+  mutate(Age = ifelse(Age == '12m Denominator', '12 months',  ifelse(Age == '24m Denominator', '24 months', ifelse(Age == '5y Denominator', '5 years', Age)))) %>% 
+  mutate(Denominator = as.numeric(Denominator))
+
+GP_202021_df <- GP_202021_df_raw %>% 
+  rename(ODS_Code = 'GP code') %>% 
+  filter(`CCG name` %in% c('NHS West Sussex CCG', 'NHS COASTAL WEST SUSSEX CCG', 'NHS CRAWLEY CCG', 'NHS HORSHAM AND MID SUSSEX CCG')) %>%
+  select(!c(`CCG code`, `CCG name`, 'Local authority code', `12m Denominator`, `24m Denominator`, `5y Denominator`)) %>%
+  pivot_longer(cols = 2:ncol(.),
+               names_to = 'Item',
+               values_to = 'Proportion') %>% 
+  mutate(Age = ifelse(str_detect(Item, '^12m'), '12 months', ifelse(str_detect(Item, '^24m'), '24 months', ifelse(str_detect(Item, '^5y'),'5 years', NA)))) %>% 
+  mutate(Item = str_trim(side = 'both', gsub('12m', '', gsub('24m', '', gsub('5y', '', gsub('%','', Item)))))) %>% 
+  left_join(GP_202021_df_raw_1, by = c('ODS_Code', 'Age')) %>% 
+  left_join(Vaccination_terms_df, by = 'Item') %>% 
+  mutate(Proportion = Proportion / 100) %>% 
+  mutate(Numerator = Denominator * Proportion) %>% 
+  mutate(Year = '2020/21') %>% 
+  mutate(Benchmark = factor(ifelse(Denominator == 0, 'No eligible patients', ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)'))), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  select(Year, ODS_Code, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
+  mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
+
+rm(GP_202021_df_raw, GP_202021_df_raw_1)
+
+# 2021/22
+GP_202122_df_raw <- read_ods(paste0(data_directory, '/Child_immunisation_GP_202122.ods'),
+                             sheet = 'Table_1',
+                             skip = 2) 
+
+GP_202122_df_raw_1 <- GP_202122_df_raw %>% 
+  rename(ODS_Code = 'GP code') %>% 
+  filter(`CCG name` %in% c('NHS West Sussex CCG', 'NHS COASTAL WEST SUSSEX CCG', 'NHS CRAWLEY CCG', 'NHS HORSHAM AND MID SUSSEX CCG')) %>%
+  select(ODS_Code, `12m Denominator`, `24m Denominator`, `5y Denominator`) %>% 
+  pivot_longer(cols = 2:ncol(.),
+               names_to = 'Age',
+               values_to = 'Denominator') %>% 
+  mutate(Age = ifelse(Age == '12m Denominator', '12 months',  ifelse(Age == '24m Denominator', '24 months', ifelse(Age == '5y Denominator', '5 years', Age)))) %>% 
+  mutate(Denominator = as.numeric(Denominator))
+
+GP_202122_df <- GP_202122_df_raw %>% 
+  rename(ODS_Code = 'GP code') %>% 
+  filter(`CCG name` %in% c('NHS West Sussex CCG', 'NHS COASTAL WEST SUSSEX CCG', 'NHS CRAWLEY CCG', 'NHS HORSHAM AND MID SUSSEX CCG')) %>%
+  select(!c(`CCG code`, `CCG name`, 'Local authority code', `12m Denominator`, `24m Denominator`, `5y Denominator`)) %>%
+  pivot_longer(cols = 2:ncol(.),
+               names_to = 'Item',
+               values_to = 'Proportion') %>% 
+  mutate(Age = ifelse(str_detect(Item, '^12m'), '12 months', ifelse(str_detect(Item, '^24m'), '24 months', ifelse(str_detect(Item, '^5y'),'5 years', NA)))) %>% 
+  mutate(Item = str_trim(side = 'both', gsub('12m', '', gsub('24m', '', gsub('5y', '', gsub('%','', Item)))))) %>% 
+  left_join(GP_202122_df_raw_1, by = c('ODS_Code', 'Age')) %>% 
+  left_join(Vaccination_terms_df, by = 'Item') %>% 
+  mutate(Proportion = Proportion / 100) %>% 
+  mutate(Numerator = Denominator * Proportion) %>% 
+  mutate(Year = '2021/22') %>% 
+  mutate(Benchmark = factor(ifelse(Denominator == 0, 'No eligible patients', ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)'))), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  select(Year, ODS_Code, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
+  mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
+
+GP_annual_df <- GP_201920_df %>% 
+  bind_rows(GP_202021_df) %>% 
+  bind_rows(GP_202122_df) 
+
+
+# Add GP name and geolocation ####
+
+download.file('https://files.digital.nhs.uk/assets/ods/current/epraccur.zip',
+              paste0(data_directory, '/epraccur.zip'),
+              mode = 'wb')
+
+unzip(paste0(data_directory, '/epraccur.zip'),
+       exdir = data_directory)
+
+gp_mapping <- read_csv(paste0(data_directory, '/epraccur.csv'),
+                       col_names = FALSE) %>% 
+  select(ODS_Code = X1, ODS_Name = X2, Postcode = X10) %>% 
+  mutate(ODS_Name = gsub('Woodlands&Clerklands', 'Woodlands & Clerklands', gsub('\\(Aic\\)', '\\(AIC\\)', gsub('\\(Acf\\)', '\\(ACF\\)', gsub('Pcn', 'PCN', gsub('And', 'and',  gsub(' Of ', ' of ',  str_to_title(ODS_Name))))))))
+
+# Geolocating practices ####
+gp_mapping <- gp_mapping %>% 
+  filter(ODS_Code  %in% GP_annual_df$ODS_Code)
+
+setdiff(GP_annual_df$ODS_Code, gp_mapping$ODS_Code)
+# only the unknown GP code in there
+
+for(i in 1:length(unique(gp_mapping$Postcode))){
+  if(i == 1){lookup_result <- data.frame(postcode = character(), longitude = double(), latitude = double())
+  }
+  
+  lookup_result_x <- postcode_lookup(unique(gp_mapping$Postcode)[i]) %>% 
+    select(postcode, longitude, latitude)
+  
+  lookup_result <- lookup_result_x %>% 
+    bind_rows(lookup_result) 
+  
+}
+
+gp_locations <- gp_mapping %>%
+  left_join(lookup_result, by = c('Postcode' = 'postcode'))  
+
+GP_annual_df_attempt_one <- GP_annual_df %>% 
+  left_join(gp_locations, by = 'ODS_Code') 
+
+GP_annual_df_attempt_one %>% 
+  filter(is.na(ODS_Name)) %>% 
+  select(ODS_Code) %>% 
+  unique()
+
+GP_annual_df %>% 
+  filter(ODS_Code != 'V81999') %>% 
+  toJSON() %>% 
+  write_lines(paste0(output_directory, '/GP_immunisations.json'))
 
 
 
