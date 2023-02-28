@@ -6,11 +6,11 @@ easypackages::libraries(packages)
 # base directory
 # base_directory <- '//chi_nas_prod2.corporate.westsussex.gov.uk/groups2.bu/Public Health Directorate/PH Research Unit/Child & maternity/Immunisation'
 base_directory <- '~/Repositories/child_immunisations/'
-data_directory <- paste0(base_directory, '/data')
-output_directory <- paste0(base_directory, '/outputs')
+data_directory <- paste0(base_directory, 'data')
+output_directory <- paste0(base_directory, '/site/outputs')
 
 # To see what is in the directory already
-list.files(data_directory)
+#list.files(data_directory)
 
 # Immunisation data landscape
 
@@ -109,7 +109,6 @@ if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202223_Q2.ods')) !
 
 # https://www.gov.uk/government/publications/vaccine-coverage-statistics-publication-dates/cover-vaccine-coverage-data-submission-and-publication-schedule
 
-# UTLA data ####
 
 # Coverage at this level is available annually, up to 2022/23 (which we are part way through) and Q1 2022/23 is available.
 
@@ -259,15 +258,14 @@ GP_annual_df <- GP_201920_df %>%
   bind_rows(GP_202021_df) %>% 
   bind_rows(GP_202122_df) 
 
-
 # Add GP name and geolocation ####
 
-download.file('https://files.digital.nhs.uk/assets/ods/current/epraccur.zip',
-              paste0(data_directory, '/epraccur.zip'),
-              mode = 'wb')
-
-unzip(paste0(data_directory, '/epraccur.zip'),
-       exdir = data_directory)
+# download.file('https://files.digital.nhs.uk/assets/ods/current/epraccur.zip',
+#               paste0(data_directory, '/epraccur.zip'),
+#               mode = 'wb')
+# 
+# unzip(paste0(data_directory, '/epraccur.zip'),
+#        exdir = data_directory)
 
 gp_mapping <- read_csv(paste0(data_directory, '/epraccur.csv'),
                        col_names = FALSE) %>% 
@@ -278,7 +276,7 @@ gp_mapping <- read_csv(paste0(data_directory, '/epraccur.csv'),
 gp_mapping <- gp_mapping %>% 
   filter(ODS_Code  %in% GP_annual_df$ODS_Code)
 
-setdiff(GP_annual_df$ODS_Code, gp_mapping$ODS_Code)
+#setdiff(GP_annual_df$ODS_Code, gp_mapping$ODS_Code)
 # only the unknown GP code in there
 
 for(i in 1:length(unique(gp_mapping$Postcode))){
@@ -304,203 +302,131 @@ GP_annual_df_attempt_one %>%
   select(ODS_Code) %>% 
   unique()
 
-GP_annual_df %>% 
+GP_annual_df_attempt_one %>% 
   filter(ODS_Code != 'V81999') %>% 
   toJSON() %>% 
   write_lines(paste0(output_directory, '/GP_immunisations.json'))
 
+areas <- c('Adur', 'Arun', 'Chichester', 'Crawley', 'Horsham', 'Mid Sussex', 'Worthing')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-quarterly_df <- read_ods(paste0(base_directory, '/hpr1022_COVER_xprmntl-gp-data-tables2.ods'),
-                         sheet = 'Table_1',
-                         skip = 2) %>% 
-  rename(ODS_Code = `GP code`)
-
-# filter Wsx GPs and remove the unknown gp code
-wsx_quarterly_denominator_df <- quarterly_df %>% 
-  filter(`CCG name` == 'NHS West Sussex CCG') %>% 
-  filter(ODS_Code != 'V81999')  %>% 
-  select(ODS_Code, `12m Denominator`, `24m Denominator`, `5y Denominator`) %>% 
-  pivot_longer(cols = 2:ncol(.),
-               names_to = 'Age',
-               values_to = 'Denominator') %>% 
-  mutate(Age = ifelse(Age == '12m Denominator', '12 months',  ifelse(Age == '24m Denominator', '24 months', ifelse(Age == '5y Denominator', '5 years', Age))))
-
-wsx_quarterly_df <- quarterly_df %>% 
-  filter(`CCG name` == 'NHS West Sussex CCG') %>% 
-  filter(ODS_Code != 'V81999') %>% 
-  select(!c('12m Denominator', '24m Denominator', '5y Denominator', 'CCG code', 'CCG name', 'local authority code')) %>% 
-  pivot_longer(cols = 2:ncol(.),
-               names_to = 'x',
-               values_to = 'Proportion') %>% 
-  mutate(Age = ifelse(str_detect(x,'12m'), '12 months',  ifelse(str_detect(x,'24m'), '24 months', ifelse(str_detect(x,'5y'), '5 years', x)))) %>% 
-  # mutate(Vaccination = trimws(gsub('%', '', substr(x, 4, nchar(x))), 'left')) #
-  mutate(Vaccination = substr(x, 4, nchar(x))) %>%  # start on character number 4 onwards (remove characters 1-3)
-  mutate(Vaccination = gsub('%', '', Vaccination)) %>% # find and replace the %
-  mutate(Vaccination = trimws(Vaccination, which = 'left')) %>%  # remove the leading (left) white space
-  mutate(Proportion = Proportion/100) %>% 
-  select(!x) %>% 
-  left_join(wsx_quarterly_denominator_df, by = c('ODS_Code', 'Age')) %>%
-  mutate(Denominator = as.numeric(Denominator)) %>% 
-  mutate(Vaccinated = Denominator * Proportion) %>% 
-  mutate(Coverage = factor(ifelse(is.na(Proportion), 'Cannot be calculated', ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', ifelse(Proportion <= 1, 'High (95%+)', NA)))), levels = c('High (95%+)', 'Medium (90-95%)', 'Low (<90%)', 'Cannot be calculated')))
-
-# wsx_quarterly_df %>% 
-#   filter(Vaccination == 'MenB') %>% 
-#   filter(Age == '12 months') %>% 
-#   View()
-
-# LTLA aggregated summary
-# download.file('https://files.digital.nhs.uk/A5/2F555C/Child_Vacc_2021-22_CSV_Data.zip',
-#               paste0(base_directory, '/Child_Vacc_2021-22_CSV_Data.zip'),
-#               mode = 'wb')
+# Load LTLA boundaries #
+# lad_boundaries_clipped_sf <- st_read('https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Local_Authority_Districts_May_2022_UK_BFC_V3_2022/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson') %>% 
+#   filter(LAD22NM %in% c('Chichester')) 
 # 
-# unzip(paste0(base_directory, '/Child_Vacc_2021-22_CSV_Data.zip'),
-#       exdir = base_directory)
+# lad_boundaries_full_extent_sf <- st_read('https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Local_Authority_Districts_May_2022_UK_BFE_V3_2022/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson') %>% 
+#   filter(LAD22NM %in% areas & LAD22NM != 'Chichester')
+# 
+# lad_boundaries_sf <- rbind(lad_boundaries_clipped_sf, lad_boundaries_full_extent_sf)
+# lad_boundaries_spdf <- as_Spatial(lad_boundaries_sf, IDs = lad_boundaries_sf$LAD22NM)
+# 
+# geojson_write(ms_simplify(geojson_json(lad_boundaries_spdf), keep = 0.3), file = paste0(output_directory, '/west_sussex_LTLAs.geojson'))
 
-# filter WSx
-# pivot table
+# County level ####
 
-# GP metadata ####
+LA_201920_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                        sheet = "Table 8b", skip = 21) %>% 
+  select(Area = ...2, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
+  filter(Area != 'Local Authority (LA)' & !is.na(Area)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2019/20',
+         Age = '12 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
 
-if(file.exists(paste0(base_directory, '/epraccur.csv')) != TRUE){
-download.file('https://files.digital.nhs.uk/assets/ods/current/epraccur.zip',
-              paste0(base_directory, '/epraccur.zip'),
-              mode = 'wb')
+LA_201920_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                          sheet = "Table 8c", skip = 21) %>% 
+  select(Area = ...2, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
+  filter(Area != 'Local Authority (LA)' & !is.na(Area)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Numerator') %>% 
+  mutate(Numerator = as.numeric(Numerator)) %>% 
+  left_join(LA_201920_12_m_p, by = c('Area', 'Item')) %>% 
+  mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  select(Year, Area, Age, Item, Term, Numerator, Proportion, Benchmark) %>% 
+  mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-unzip(paste0(base_directory, '/epraccur.zip'),
-      exdir = base_directory)
-}
+rm(LA_201920_12_m_p)
 
-gp_df <- read_csv(paste0(base_directory, '/epraccur.csv'),
-                  col_names = c("ODS_Code", "ODS_Name", "National_grouping","Health_geography","Address_1","Address_2", "Address_3", "Address_4", "Address_5", "Postcode", "Open_date", "Close_date", "Status", "Organisation_sub_type", "Commissioner", "Join_provider_date", "Left_provider_date", "Contact_number", 'Null_1', 'Null_2', 'Null_3', "Amended_record_identifier", 'Null_4', "Provider_purchaser", 'Null_6', "Prescribing_setting", 'Null_7')) %>% 
-  mutate(Status = ifelse(Status == "A", "Active", ifelse(Status == "C", "Closed", ifelse(Status == "D", "Dormant", ifelse(Status == "P", "Proposed", NA))))) %>% 
-  mutate(Open_date = ifelse(is.na(Open_date), NA, paste(substr(Open_date, 1,4), substr(Open_date, 5,6), substr(Open_date, 7,8), sep = '-'))) %>% 
-  mutate(Close_date = ifelse(is.na(Close_date), NA, paste(substr(Close_date, 1,4), substr(Close_date, 5,6), substr(Close_date, 7,8), sep = '-'))) %>%
-  mutate(Open_date = as.Date(Open_date)) %>% 
-  mutate(Close_date = as.Date(Close_date)) %>% 
-  mutate(ODS_Name = gsub('Cdc', 'CDC', gsub('Gp', 'GP', gsub('Pcn', 'PCN', gsub('And', 'and',  gsub(' Of ', ' of ', gsub('Bdct ', 'BDCT ', gsub(' Eis ', ' EIS ', gsub(' Ld ', ' LD ',  str_to_title(ODS_Name)))))))))) %>% 
-  mutate(Address_label = gsub(', NA','', paste(str_to_title(Address_1), str_to_title(Address_2),str_to_title(Address_3),str_to_title(Address_4), str_to_title(Address_5), Postcode, sep = ', '))) %>% 
-  select(ODS_Code, ODS_Name, Health_geography, Commissioner, Address_label, Postcode, Open_date, Close_date, Status)
+LA_201920_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                               sheet = "Table 9b", skip = 20) %>% 
+  select(Area = ...2, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`, `MenB Booster` = MenB) %>% 
+  filter(Area != 'Local Authority (LA)' & !is.na(Area)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2019/20',
+         Age = '24 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
 
-gp_df <- gp_df %>% 
-  filter(ODS_Code %in% wsx_quarterly_df$ODS_Code)
+LA_201920_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                             sheet = "Table 9c", skip = 20) %>% 
+  select(Area = ...2, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`, `MenB Booster` = MenB) %>% 
+  filter(Area != 'Local Authority (LA)' & !is.na(Area)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator)) %>% 
+  left_join(LA_201920_24_m_p, by = c('Area', 'Item')) %>% 
+  mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  select(Year, Area, Age, Item, Term, Numerator, Proportion, Benchmark) %>% 
+  mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-# GIS - geolocation
+rm(LA_201920_24_m_p)
 
-# Loop through our key_geocodes df rows and lookup the postcodes 
-for(i in 1:nrow(gp_df)){
-  
-  # if this is the start of the loop (i.e. i = 1), then create an empty dataframe in which we append results from the look up to. I am only going to keep the postcode, lat/long and lsoa_code this time (not the 35 fields available)
-  if(i == 1){lookup_result <- data.frame(postcode = character(), longitude = double(), latitude = double(), lsoa_code = character())}
-  
-  lookup_result_x <- postcode_lookup(gp_df$Postcode[i]) %>% 
-    select(postcode, longitude, latitude, lsoa_code)
-  
-  lookup_result <- lookup_result_x %>% 
-    bind_rows(lookup_result) # This adds the individual result (result_x) to the bigger dataframe
-}
+names(LA_201920_5_y_p)
+unique(GP_annual_df_attempt_one$Item)
 
-gp_df <- gp_df %>% 
-  left_join(lookup_result, by = c('Postcode' = 'postcode'))
+LA_201920_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                               sheet = "Table 10b", skip = 20) %>% 
+  select(Area = ...2, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  filter(Area != 'Local Authority (LA)' & !is.na(Area)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2019/20',
+         Age = '5 years') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') %>% 
+  mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
 
-wsx_quarterly_df <- wsx_quarterly_df %>% 
-  left_join(gp_df, by = 'ODS_Code')
+LA_201920_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                             sheet = "Table 10c", skip = 20) %>% 
+  select(Area = ...2, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  filter(Area != 'Local Authority (LA)' & !is.na(Area)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator)) %>% 
+  left_join(LA_201920_5_y_p, by = c('Area', 'Item')) %>% 
+  mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  select(Year, Area, Age, Item, Term, Numerator, Proportion, Benchmark) %>% 
+  mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-# Maps ####
+rm(LA_201920_5_y_p)
 
-ages <- c('12 months', '24 months', '5 years')
+LA_201920 <- LA_201920_12_m %>% 
+  bind_rows(LA_201920_24_m) %>% 
+  bind_rows(LA_201920_5_y) %>% 
+  filter(Area == 'West Sussex')
 
-vaccination_x <- 'MenB'
-age_x <- '12 months'
+# Seasonal flu - 2 and 3
 
-imms_data_x <- wsx_quarterly_df %>% 
-  filter(Vaccination == vaccination_x) %>%
-  filter(Age == age_x)
+# Seasonal flu school age
+# https://www.gov.uk/government/statistics/seasonal-influenza-vaccine-uptake-in-children-of-school-age-monthly-data-2022-to-2023
 
-imms_data_y <- wsx_quarterly_df %>% 
-  filter(Vaccination == 'Rota') %>%
-  filter(Age == age_x)
 
-# download wsx county boundaries
+# HPV school age
+# https://www.gov.uk/government/statistics/human-papillomavirus-hpv-vaccine-coverage-estimates-in-england-2021-to-2022
 
-query <- 'https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Counties_and_Unitary_Authorities_December_2021_EN_BFC/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson'
-boundary_sf <- st_read(query)
 
-# plot(boundary_sf)
-wsx_boundary_sf <- boundary_sf %>% 
-  filter(CTYNME == 'West Sussex')
 
-wsx_spdf <- as_Spatial(wsx_boundary_sf, IDs = wsx_boundary_sf$CTYNME)
 
-# https://rstudio.github.io/leaflet/
+# Outputs
 
-levels(wsx_quarterly_df$Coverage)
-traffic_light_colours <- c('#92D050', '#FFC000', '#C00000','#dbdbdb')
-
-vaccinated_colour_function <- colorFactor(palette = traffic_light_colours, 
-                                        levels = levels(wsx_quarterly_df$Coverage))
-
-leaflet(imms_data_x) %>% 
-  addControl(paste0("<font size = '1px'><b>West Sussex Childhood immunisations by GP practice code for quarter 1 2022 to 2023:</b><br>Data correct as at November 2022;</font>"),
-             position = 'topright') %>%
-  addTiles(urlTemplate = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-           attribution = paste0('&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a><br>Contains OS data ? Crown copyright and database right 2021<br>Zoom in/out using your mouse wheel or the plus (+) and minus (-) buttons and click on an circle to find out more.')) %>% 
-  addPolygons(data = wsx_spdf,
-              fill = FALSE,
-              stroke = TRUE, # outline
-              color = 'maroon', # outline colour
-              weight = 2.5, # outline width
-              fillOpacity = .8) %>% 
-  addCircleMarkers(lng = imms_data_x$longitude,
-                   lat = imms_data_x$latitude,
-                   label = imms_data_x$ODS_Name,
-                   popup = paste0(imms_data_x$ODS_Name, '<br><br>Percentage vaccinated: ', round(imms_data_x$Proportion *100, 1), '%'),
-                   color = vaccinated_colour_function(imms_data_x$Coverage),
-                   radius = 6,
-                   fillOpacity = 1,
-                  stroke = FALSE,
-                  group = 'MenB') %>% 
-  addCircleMarkers(lng = imms_data_y$longitude,
-                   lat = imms_data_y$latitude,
-                   label = imms_data_y$ODS_Name,
-                   popup = paste0(imms_data_y$ODS_Name, '<br><br>Percentage vaccinated: ', round(imms_data_y$Proportion *100, 1), '%'),
-                   color = vaccinated_colour_function(imms_data_y$Coverage),
-                   radius = 6,
-                   fillOpacity = 1,
-                   stroke = FALSE,
-                   group = 'ROTA') %>% 
-   addLegend(colors = vaccinated_colour_function(levels(imms_data_x$Coverage)),
-             labels = levels(imms_data_x$Coverage),
-             title = 'Vaccination coverage',
-             opacity = 1,
-             position = 'bottomright') %>% 
-   addLayersControl(
-    baseGroups = c("MenB", 'ROTA'),
-    options = layersControlOptions(collapsed = FALSE)
-  )
-
-# Outputs ####
 # To save data to excel files
 library(openxlsx)
 
