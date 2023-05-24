@@ -87,7 +87,7 @@ window.onload = () => {
   loadTable_ltla_24_months(ltla_24_months_df);
   loadTable_ltla_24_months_quarterly(ltla_24_months_quarterly_df);
   loadTable_ltla_5_years(ltla_5_years_df)
-  // loadTable_ltla_5_years_quarterly(ltla_5_years_quarterly_df);
+  loadTable_ltla_5_years_quarterly(ltla_5_years_quarterly_df);
 };
 
 // ! Set some parameters
@@ -128,10 +128,7 @@ function ltla_style(feature) {
         weight: 1,
         fillOpacity: 0.25
           };
-        }
-
-        
-
+        }    
         
 // ! Tables 
 ltla_12_months_df = ltla_annual_table_df.filter(function (d) {
@@ -202,6 +199,21 @@ function loadTable_ltla_5_years(ltla_5_years_df) {
 
   for (let item of ltla_5_years_df) {
   dataHTML += `<tr><td>${ltla_table_labels(item.Item)}</td><td class = cell_ltla>${item['2017/18']}<div class = ${benchmark_class(item['Benchmark2017/18'])}></div></td><td class = cell_ltla>${item['2018/19']}<div class = ${benchmark_class(item['Benchmark2018/19'])}></div></td><td class = cell_ltla>${item['2019/20']}<div class = ${benchmark_class(item['Benchmark2019/20'])}></div></td><td class = cell_ltla>${item['2020/21']}<div class = ${benchmark_class(item['Benchmark2020/21'])}></div></td><td class = cell_ltla>${item['2021/22']}<div class = ${benchmark_class(item['Benchmark2021/22'])}></div></td></tr>`;
+  }
+  tableBody.innerHTML = dataHTML;
+}
+
+
+ltla_5_years_quarterly_df = ltla_quarterly_table_df.filter(function (d) {
+  return d.Age === '5 years' 
+});
+
+function loadTable_ltla_5_years_quarterly(ltla_5_years_quarterly_df) {
+  const tableBody = document.getElementById("table_ltla_5_years_quarterly_body");
+  var dataHTML = "";
+
+  for (let item of ltla_5_years_quarterly_df) {
+  dataHTML += `<tr><td>${ltla_table_labels(item.Item)}</td><td class = cell_ltla>${item['2022/23 Q1']}<div class = ${benchmark_class(item['Benchmark2022/23 Q1'])}></div></td><td class = cell_ltla>${item['2022/23 Q2']}<div class = ${benchmark_class(item['Benchmark2022/23 Q2'])}></div></td><td class = cell_ltla>${item['2022/23 Q3']}<div class = ${benchmark_class(item['Benchmark2022/23 Q3'])}></div></td></tr>`;
   }
   tableBody.innerHTML = dataHTML;
 }

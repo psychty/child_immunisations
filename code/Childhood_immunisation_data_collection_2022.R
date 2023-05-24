@@ -56,6 +56,7 @@ annual_text_source <- 'https://www.gov.uk/government/publications/cover-of-vacci
 
 caveat_1 <- 'In 2019/20, Public Health England (PHE) published annual COVER data (previously published by NHS England). This was the first year where annual GP practice level coverage was based on a refreshed extract, which allowed for corrections to be made following quarterly submissions. This data is also aggregated in the National General Practice Profiles on Fingertips, although there is a time lag.'
 
+
 caveat_2 <-  'Annual GP practice level coverage data has also been published for 2020/21. Disruption due to the COVID-19 pandemic is likely to have caused some decreases in vaccine coverage, particularly for the 12 month cohort.'
 
 caveat_3 <- 'Annual data at higher geographies is also published by NHS Digital and is reproduced on fingertips. Data collections are quality assured at the time of collection by UKHSA and further validation is carried out by NHS Digital prior to publication (detailed here - https://digital.nhs.uk/data-and-information/publications/statistical/nhs-immunisation-statistics/england---2020-21/appendices).'
@@ -271,7 +272,7 @@ LA_201718 <- LA_201718_12_m %>%
 
 rm(LA_201718_12_m, LA_201718_24_m, LA_201718_5_y)
 
-# 2018 #####
+# 2017/18 #####
 LA_201819_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
                                sheet = "Table 8b", skip = 21) %>% 
   select(Area = ...2, Denominator = `(thousands)`, DTaPIPVHibHepB = `(DTaP/IPV/Hib)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
@@ -429,7 +430,7 @@ LA_201920_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_20
   pivot_longer(names_to = 'Item',
                cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
                values_to = 'Proportion') %>% 
-  mutate(Proportion = as.numeric(Proportion) / 1000) %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
   mutate(Year = '2019/20',
          Age = '5 years') %>% 
   left_join(Vaccination_terms_df, by = 'Item') %>% 
@@ -726,16 +727,152 @@ LTLA_Q3_202223 <- read_ods(paste0(data_directory, '/Child_immunisation_LA_202223
          Age = '12 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
-LTLA_202223 <- LTLA_Q1_202223 %>% 
+LTLA_12_month_202223 <- LTLA_Q1_202223 %>% 
   bind_rows(LTLA_Q2_202223) %>% 
   bind_rows(LTLA_Q3_202223) 
 
-LA_quarterly_table_values <- LTLA_202223 %>% 
+rm(LTLA_Q1_202223, LTLA_Q2_202223, LTLA_Q3_202223)
+
+LTLA_Q1_24_m_202223 <- read_ods(paste0(data_directory, '/Child_immunisation_LA_202223_Q1.ods'),
+                           sheet = '24m_UTLA_GOR',
+                           skip = 4) %>% 
+  filter(`UTLA name` == 'West Sussex') %>% 
+  select(Area = 'UTLA name', Denominator = '24m denominator', DTaPIPVHibHepB = '24m DTaP/IPV/Hib%', PCV2 = '24m PCV Booster%', MenB = '24m MenB Booster%', `Hib/MenC` = '24m Hib/MenC%', MMR1 = '24m MMR1%') %>% 
+  mutate(Denominator = as.numeric(Denominator)) %>% 
+  mutate(DTaPIPVHibHepB = as.numeric(DTaPIPVHibHepB)) %>% 
+  mutate(MenB = as.numeric(MenB)) %>% 
+  mutate(PCV2 = as.numeric(PCV2)) %>% 
+  mutate(MMR1 = as.numeric(MMR1)) %>% 
+  mutate(`Hib/MenC` = as.numeric(`Hib/MenC`)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, MMR1, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Benchmark = factor(ifelse(Proportion < 90, 'Low (<90%)', ifelse(Proportion < 95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>%   mutate(Proportion_2 = paste0(round(as.numeric(Proportion), 1), '%')) %>%
+  mutate(Year = '2022/23 Q1',
+         Age = '24 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LTLA_Q2_24_m_202223 <- read_ods(paste0(data_directory, '/Child_immunisation_LA_202223_Q2.ods'),
+                           sheet = '24m_UTLA_GOR',
+                           skip = 5) %>% 
+  filter(`UTLA name` == 'West Sussex') %>% 
+  select(Area = 'UTLA name', Denominator = '24m denominator', DTaPIPVHibHepB = '24m DTaP/IPV/Hib%', PCV2 = '24m PCV Booster%', MenB = '24m MenB Booster%', `Hib/MenC` = '24m Hib/MenC%', MMR1 = '24m MMR1%') %>% 
+  mutate(Denominator = as.numeric(Denominator)) %>% 
+  mutate(DTaPIPVHibHepB = as.numeric(DTaPIPVHibHepB)) %>% 
+  mutate(MenB = as.numeric(MenB)) %>% 
+  mutate(PCV2 = as.numeric(PCV2)) %>% 
+  mutate(MMR1 = as.numeric(MMR1)) %>% 
+  mutate(`Hib/MenC` = as.numeric(`Hib/MenC`)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, MMR1, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Benchmark = factor(ifelse(Proportion < 90, 'Low (<90%)', ifelse(Proportion < 95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>%   mutate(Proportion_2 = paste0(round(as.numeric(Proportion), 1), '%')) %>%
+  mutate(Year = '2022/23 Q2',
+         Age = '24 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LTLA_Q3_24_m_202223 <- read_ods(paste0(data_directory, '/Child_immunisation_LA_202223_Q3.ods'),
+                           sheet = '24m_UTLA_GOR',
+                           skip = 5) %>% 
+  filter(`UTLA name` == 'West Sussex') %>% 
+  select(Area = 'UTLA name', Denominator = '24m denominator', DTaPIPVHibHepB = '24m DTaP/IPV/Hib/HepB3%', PCV2 = '24m PCV Booster%', MenB = '24m MenB Booster%', `Hib/MenC` = '24m Hib/MenC%', MMR1 = '24m MMR1%') %>% 
+  mutate(Denominator = as.numeric(Denominator)) %>% 
+  mutate(DTaPIPVHibHepB = as.numeric(DTaPIPVHibHepB)) %>% 
+  mutate(MenB = as.numeric(MenB)) %>% 
+  mutate(PCV2 = as.numeric(PCV2)) %>% 
+  mutate(MMR1 = as.numeric(MMR1)) %>% 
+  mutate(`Hib/MenC` = as.numeric(`Hib/MenC`)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, MMR1, `Hib/MenC`),
+               values_to = 'Proportion') %>%
+  mutate(Benchmark = factor(ifelse(Proportion < 90, 'Low (<90%)', ifelse(Proportion < 95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  mutate(Proportion_2 = paste0(round(as.numeric(Proportion), 1), '%')) %>%
+  mutate(Year = '2022/23 Q3',
+         Age = '24 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LTLA_24_month_202223 <- LTLA_Q1_24_m_202223 %>% 
+  bind_rows(LTLA_Q2_24_m_202223) %>% 
+  bind_rows(LTLA_Q3_24_m_202223) 
+
+rm(LTLA_Q1_24_m_202223, LTLA_Q2_24_m_202223, LTLA_Q3_24_m_202223)
+
+LTLA_Q1_5y_202223 <- read_ods(paste0(data_directory, '/Child_immunisation_LA_202223_Q1.ods'),
+                                sheet = '5y_UTLA_GOR',
+                                skip = 4) %>% 
+  filter(`UTLA name` == 'West Sussex') %>% 
+  select(Area = 'UTLA name', Denominator = '5y denominator', DTaPIPVHibHepB = '5y DTaP/IPV/Hib%', `Hib/MenC` = '5y Hib/MenC%', MMR1 = '5y MMR1%', MMR2 = '5y MMR2%', DTaPIPV = '5y DTaPIPV%') %>% 
+  mutate(Denominator = as.numeric(Denominator)) %>% 
+  mutate(DTaPIPVHibHepB = as.numeric(DTaPIPVHibHepB)) %>% 
+  mutate(DTaPIPV = as.numeric(DTaPIPV)) %>% 
+  mutate(MMR1 = as.numeric(MMR1)) %>% 
+  mutate(MMR2 = as.numeric(MMR2)) %>% 
+  mutate(`Hib/MenC` = as.numeric(`Hib/MenC`)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, DTaPIPV, MMR1, MMR2, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Benchmark = factor(ifelse(Proportion < 90, 'Low (<90%)', ifelse(Proportion < 95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>%   mutate(Proportion_2 = paste0(round(as.numeric(Proportion), 1), '%')) %>%
+  mutate(Year = '2022/23 Q1',
+         Age = '5 years') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LTLA_Q2_5y_202223 <- read_ods(paste0(data_directory, '/Child_immunisation_LA_202223_Q2.ods'),
+                                sheet = '5y_UTLA_GOR',
+                                skip = 5) %>% 
+  filter(`UTLA name` == 'West Sussex') %>% 
+  select(Area = 'UTLA name', Denominator = '5y denominator', DTaPIPVHibHepB = '5y DTaP/IPV/Hib%', `Hib/MenC` = '5y Hib/MenC%', MMR1 = '5y MMR1%', MMR2 = '5y MMR2%', DTaPIPV = '5y DTaPIPV%') %>% 
+  mutate(Denominator = as.numeric(Denominator)) %>% 
+  mutate(DTaPIPVHibHepB = as.numeric(DTaPIPVHibHepB)) %>% 
+  mutate(DTaPIPV = as.numeric(DTaPIPV)) %>% 
+  mutate(MMR1 = as.numeric(MMR1)) %>% 
+  mutate(MMR2 = as.numeric(MMR2)) %>% 
+  mutate(`Hib/MenC` = as.numeric(`Hib/MenC`)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, DTaPIPV, MMR1, MMR2, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Benchmark = factor(ifelse(Proportion < 90, 'Low (<90%)', ifelse(Proportion < 95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>%   mutate(Proportion_2 = paste0(round(as.numeric(Proportion), 1), '%')) %>%
+  mutate(Year = '2022/23 Q2',
+         Age = '5 years') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LTLA_Q3_5y_202223 <- read_ods(paste0(data_directory, '/Child_immunisation_LA_202223_Q3.ods'),
+                                sheet = '5y_UTLA_GOR',
+                                skip = 5) %>% 
+  filter(`UTLA name` == 'West Sussex') %>% 
+  select(Area = 'UTLA name', Denominator = '5y denominator', DTaPIPVHibHepB = '5y DTaP/IPV/Hib/HepB3%', `Hib/MenC` = '5y Hib/MenC%', MMR1 = '5y MMR1%', MMR2 = '5y MMR2%', DTaPIPV = '5y DTaPIPV%') %>% 
+  mutate(Denominator = as.numeric(Denominator)) %>% 
+  mutate(DTaPIPVHibHepB = as.numeric(DTaPIPVHibHepB)) %>% 
+  mutate(DTaPIPV = as.numeric(DTaPIPV)) %>% 
+  mutate(MMR1 = as.numeric(MMR1)) %>% 
+  mutate(MMR2 = as.numeric(MMR2)) %>% 
+  mutate(`Hib/MenC` = as.numeric(`Hib/MenC`)) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, DTaPIPV, MMR1, MMR2, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Benchmark = factor(ifelse(Proportion < 90, 'Low (<90%)', ifelse(Proportion < 95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  mutate(Proportion_2 = paste0(round(as.numeric(Proportion), 1), '%')) %>%
+  mutate(Year = '2022/23 Q3',
+         Age = '5 years') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LTLA_5_year_202223 <- LTLA_Q1_5y_202223 %>% 
+  bind_rows(LTLA_Q2_5y_202223) %>% 
+  bind_rows(LTLA_Q3_5y_202223) 
+
+rm(LTLA_Q1_5y_202223, LTLA_Q2_5y_202223, LTLA_Q3_5y_202223)
+
+LA_quarterly_table_values <- LTLA_12_month_202223 %>% 
+  mutate(Proportion = as.numeric(Proportion)) %>% 
+  bind_rows(LTLA_24_month_202223) %>% 
+  bind_rows(LTLA_5_year_202223) %>% 
   select(Age, Year, Item, Proportion = Proportion_2) %>% 
   pivot_wider(names_from = 'Year',
               values_from = 'Proportion')
 
-LA_quarterly_table_labels <- LTLA_202223 %>%
+LA_quarterly_table_labels <- LTLA_12_month_202223 %>% 
+  mutate(Proportion = as.numeric(Proportion)) %>% 
+  bind_rows(LTLA_24_month_202223) %>% 
+  bind_rows(LTLA_5_year_202223) %>% 
   mutate(Numerator = Denominator * (as.numeric(Proportion) / 100)) %>% 
   select(Age, Year, Item, Numerator, Denominator, Proportion = Proportion_2) %>%
   mutate(Proportion = ifelse(is.na(Proportion), '-', paste0(Proportion, ' (', format(Numerator, big.mark = ','),'/', format(Denominator, big.mark = ','),')'))) %>%
@@ -744,7 +881,10 @@ LA_quarterly_table_labels <- LTLA_202223 %>%
               values_from = 'Proportion') %>% 
   mutate()
 
-LA_quarterly_table_benchmark_values <- LTLA_202223 %>% 
+LA_quarterly_table_benchmark_values <-LTLA_12_month_202223 %>% 
+  mutate(Proportion = as.numeric(Proportion)) %>% 
+  bind_rows(LTLA_24_month_202223) %>% 
+  bind_rows(LTLA_5_year_202223) %>% 
   select(Age, Year, Item, Benchmark) %>% 
   mutate(Benchmark = ifelse(is.na(Benchmark), '-', as.character(Benchmark))) %>% 
   pivot_wider(names_from = 'Year',
@@ -755,7 +895,6 @@ LA_quarterly_table_labels %>%
   left_join(LA_quarterly_table_benchmark_values, by = c('Age', 'Item')) %>% 
   toJSON() %>% 
   write_lines(paste0(output_directory, '/LTLA_quarterly_table.json'))
-
 
 # GP ####
 
