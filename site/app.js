@@ -736,81 +736,80 @@ for (var i = 0; i < gp_immunisations_data_5_years_vaccine_3.length; i++) {
     .addTo(Annual_5_years_vaccine_3_group) // These markers are directly added to the layer group
   };
       
-// gp_immunisations_data_5_years_vaccine_4 = gp_immunisations_data.filter(function (d) {
-//   return d.Year == '2021/22' &&
-//           d.Age === '24 months' &&
-//           d.Item === 'Hib/MenC';
-// });
+gp_immunisations_data_5_years_vaccine_4 = gp_immunisations_data.filter(function (d) {
+  return d.Year == '2021/22' &&
+          d.Age === '5 years' &&
+          d.Item === 'DTaPIPV';
+});
 
-// Annual_24_months_vaccine_4_group = L.layerGroup();
+Annual_5_years_vaccine_4_group = L.layerGroup();
   
-// // This loops through the Local_GP_location dataframe and plots a marker for every record.
-// for (var i = 0; i < gp_immunisations_data_24_months_vaccine_4.length; i++) {
-//   new L.circleMarker([gp_immunisations_data_24_months_vaccine_4[i]['latitude'], gp_immunisations_data_24_months_vaccine_4[i]['longitude']],{
-//     radius: 8,
-//     weight: .75,
-//     fillColor: benchmark_colour(gp_immunisations_data_24_months_vaccine_4[i]['Benchmark']),
-//     color: '#fff',
-//     fillOpacity: 1})
-//     .bindPopup('<Strong>' + 
-//     gp_immunisations_data_24_months_vaccine_4[i]['ODS_Code'] + 
-//     ' ' + 
-//     gp_immunisations_data_24_months_vaccine_4[i]['ODS_Name'] + 
-//     '</Strong><br><br>The ' +
-//     gp_immunisations_data_24_months_vaccine_4[i]['Age'] +
-//     ' coverage for the ' +
-//     gp_immunisations_data_24_months_vaccine_4[i]['Term'] +  
-//     ' in this practice is <Strong>' + 
-//     d3.format('.1%')(gp_immunisations_data_24_months_vaccine_4[i]['Proportion']) +
-//     ' </Strong> (based on an eligible population of ' +
-//     gp_immunisations_data_24_months_vaccine_4[i]['Denominator'] +
-//     ' children).<br><br>According to available data, ' + 
-//     d3.format(',.0f')(gp_immunisations_data_24_months_vaccine_4[i]['Denominator'] - gp_immunisations_data_24_months_vaccine_4[i]['Numerator']) + 
-//     ' person/people were recorded as not receiving this vaccination.' )
-//     .addTo(Annual_24_months_vaccine_4_group) // These markers are directly added to the layer group
-//   };
+// This loops through the Local_GP_location dataframe and plots a marker for every record.
+for (var i = 0; i < gp_immunisations_data_5_years_vaccine_4.length; i++) {
+  new L.circleMarker([gp_immunisations_data_5_years_vaccine_4[i]['latitude'], gp_immunisations_data_5_years_vaccine_4[i]['longitude']],{
+    radius: 8,
+    weight: .75,
+    fillColor: benchmark_colour(gp_immunisations_data_5_years_vaccine_4[i]['Benchmark']),
+    color: '#fff',
+    fillOpacity: 1})
+    .bindPopup('<Strong>' + 
+    gp_immunisations_data_5_years_vaccine_4[i]['ODS_Code'] + 
+    ' ' + 
+    gp_immunisations_data_5_years_vaccine_4[i]['ODS_Name'] + 
+    '</Strong><br><br>The ' +
+    gp_immunisations_data_5_years_vaccine_4[i]['Age'] +
+    ' coverage for the ' +
+    gp_immunisations_data_5_years_vaccine_4[i]['Term'] +  
+    ' in this practice is <Strong>' + 
+    d3.format('.1%')(gp_immunisations_data_5_years_vaccine_4[i]['Proportion']) +
+    ' </Strong> (based on an eligible population of ' +
+    gp_immunisations_data_5_years_vaccine_4[i]['Denominator'] +
+    ' children).<br><br>According to available data, ' + 
+    d3.format(',.0f')(gp_immunisations_data_5_years_vaccine_4[i]['Denominator'] - gp_immunisations_data_5_years_vaccine_4[i]['Numerator']) + 
+    ' person/people were recorded as not receiving this vaccination.' )
+    .addTo(Annual_5_years_vaccine_4_group) // These markers are directly added to the layer group
+  };
 
-
-//   gp_immunisations_data_24_months_vaccine_5 = gp_immunisations_data.filter(function (d) {
-//     return d.Year == '2021/22' &&
-//             d.Age === '24 months' &&
-//             d.Item === 'MenB Booster';
-//   });
+ gp_immunisations_data_5_years_vaccine_5 = gp_immunisations_data.filter(function (d) {
+    return d.Year == '2021/22' &&
+            d.Age === '5 years' &&
+            d.Item === 'Hib/MenC';
+  });
               
-// Annual_24_months_vaccine_5_group = L.layerGroup();
+Annual_5_years_vaccine_5_group = L.layerGroup();
 
-// // This loops through the Local_GP_location dataframe and plots a marker for every record.
-// for (var i = 0; i < gp_immunisations_data_24_months_vaccine_5.length; i++) {
-// new L.circleMarker([gp_immunisations_data_24_months_vaccine_5[i]['latitude'], gp_immunisations_data_24_months_vaccine_5[i]['longitude']],{
-//   radius: 8,
-//   weight: .75,
-//   fillColor: benchmark_colour(gp_immunisations_data_24_months_vaccine_5[i]['Benchmark']),
-//   color: '#fff',
-//   fillOpacity: 1})
-//   .bindPopup('<Strong>' + 
-//   gp_immunisations_data_24_months_vaccine_5[i]['ODS_Code'] + 
-//   ' ' + 
-//   gp_immunisations_data_24_months_vaccine_5[i]['ODS_Name'] + 
-//   '</Strong><br><br>The ' +
-//   gp_immunisations_data_24_months_vaccine_5[i]['Age'] +
-//   ' coverage for the ' +
-//   gp_immunisations_data_24_months_vaccine_5[i]['Term'] +  
-//   ' in this practice is <Strong>' + 
-//   d3.format('.1%')(gp_immunisations_data_24_months_vaccine_5[i]['Proportion']) +
-//   ' </Strong> (based on an eligible population of ' +
-//   gp_immunisations_data_24_months_vaccine_5[i]['Denominator'] +
-//   ' children).<br><br>According to available data, ' + 
-//   d3.format(',.0f')(gp_immunisations_data_24_months_vaccine_5[i]['Denominator'] - gp_immunisations_data_24_months_vaccine_5[i]['Numerator']) + 
-//   ' person/people were recorded as not receiving this vaccination.' )
-//   .addTo(Annual_24_months_vaccine_5_group) // These markers are directly added to the layer group
-// };
+// This loops through the Local_GP_location dataframe and plots a marker for every record.
+for (var i = 0; i < gp_immunisations_data_5_years_vaccine_5.length; i++) {
+new L.circleMarker([gp_immunisations_data_5_years_vaccine_5[i]['latitude'], gp_immunisations_data_5_years_vaccine_5[i]['longitude']],{
+  radius: 8,
+  weight: .75,
+  fillColor: benchmark_colour(gp_immunisations_data_5_years_vaccine_5[i]['Benchmark']),
+  color: '#fff',
+  fillOpacity: 1})
+  .bindPopup('<Strong>' + 
+  gp_immunisations_data_5_years_vaccine_5[i]['ODS_Code'] + 
+  ' ' + 
+  gp_immunisations_data_5_years_vaccine_5[i]['ODS_Name'] + 
+  '</Strong><br><br>The ' +
+  gp_immunisations_data_5_years_vaccine_5[i]['Age'] +
+  ' coverage for the ' +
+  gp_immunisations_data_5_years_vaccine_5[i]['Term'] +  
+  ' in this practice is <Strong>' + 
+  d3.format('.1%')(gp_immunisations_data_5_years_vaccine_5[i]['Proportion']) +
+  ' </Strong> (based on an eligible population of ' +
+  gp_immunisations_data_5_years_vaccine_5[i]['Denominator'] +
+  ' children).<br><br>According to available data, ' + 
+  d3.format(',.0f')(gp_immunisations_data_5_years_vaccine_5[i]['Denominator'] - gp_immunisations_data_5_years_vaccine_5[i]['Numerator']) + 
+  ' person/people were recorded as not receiving this vaccination.' )
+  .addTo(Annual_5_years_vaccine_5_group) // These markers are directly added to the layer group
+};
                     
 var baseMaps_map_5_years = {
 "Show DTaP/IPV/Hib/HepB (6-in-1) vaccine coverage": Annual_5_years_vaccine_1_group,
-"Show Measles, Mumps, and rubella dose 1 coverage": Annual_5_years_vaccine_2_group,
-"Show Measles, Mumps, and rubella dose 1 and 2 coverage": Annual_5_years_vaccine_3_group,
-// "Show Haemophilus influenzae type B and Meningococcal group C vaccine coverage": Annual_5_years_vaccine_4_group,
-// "Show Meningococcal group B vaccine coverage": Annual_5_years_vaccine_5_group,
+"Show Measles, Mumps, and Rubella dose 1 coverage": Annual_5_years_vaccine_2_group,
+"Show Measles, Mumps, and Rubella dose 1 and 2 coverage": Annual_5_years_vaccine_3_group,
+"Show Diphtheria, Tetanus, Polio, and Pertussis<br>(DTaP/IPV) booster vaccine coverage": Annual_5_years_vaccine_4_group,
+"Show Haemophilus influenzae type B and<br>Meningococcal group C booster vaccine coverage": Annual_5_years_vaccine_5_group,
 }
 
 L.control
