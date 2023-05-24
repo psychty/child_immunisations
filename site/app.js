@@ -90,7 +90,6 @@ window.onload = () => {
   // loadTable_ltla_5_years_quarterly(ltla_5_years_quarterly_df);
 };
 
-
 // ! Set some parameters
 var benchmark_colour = d3
  .scaleOrdinal()
