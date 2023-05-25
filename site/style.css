@@ -45,7 +45,16 @@ a {
 a:hover {
  color: #000; 
 }
+
+.flu_all_lines {
+   fill: none;
+   /* stroke: #d2d2d2; */
+ }
   
+/* svg{
+   background-color: antiquewhite;
+} */
+
 .good_to_know {
  border: 2px solid #cc0052;
  border-radius: 5px;

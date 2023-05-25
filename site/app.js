@@ -1,13 +1,62 @@
 // ! Parameters
-var width = window.innerWidth * 0.8 - 20;
-var height = width * 0.8;
-if (width > 900) {
-  var width = 900;
-  var height = width * .6;
-}
-var width_margin = width * 0.15;
+
+// ! Flu figure
+var margin = {top: 10, right: 50, bottom: 20, left: 30},
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+var areas = ['West Sussex', 'England']
+var area_colours = d3
+  .scaleOrdinal()
+  .domain(areas)
+  .range(['#fa8800',
+  '#999999'])
+       
+var circle_size_function = d3
+  .scaleOrdinal()
+  .domain(areas)
+  .range([8, 5])
+
+var benchmark_colour = d3
+.scaleOrdinal()
+.domain(['Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'])
+.range([
+       '#CC2629',
+       '#E7AF27',
+       '#3ECC26', 
+       '#8E8E8E']);
+
+var benchmark_class = d3
+.scaleOrdinal()
+.domain(['Low (<90%)', 'Medium (90-95%)', 'High (95%+)', '-'])
+.range(['low_circle', 'medium_circle', 'high_circle', 'no_circle']);
+
+
+var ltla_table_labels = d3
+.scaleOrdinal()
+.domain(['DTaPIPVHibHepB', 'PCV2', 'MenB', 'Rota', 'MMR1', 'PCV Booster', 'Hib/MenC', 'DTaP/IPV/Hib(Hep)', 'MenB Booster', 'MMR2', 'DTaPIPV'])
+.range(['DTaP/IPV/Hib/HepB vaccine*', 'Pneumococcal conjulate vaccine (PCV)', 'Meningococcal group B', 'Rotavirus', 'Measles, mumps, and rubella vaccine dose 1', 'PCV booster', 'Haemophilus influenzae type B and Meningococcal group C booster', '6-in-1 booster (three doses by second birthday)', 'Meningococcal group B booster', 'Measles, mumps, and rubella vaccine dose 1 and 2', 'Diphtheria, Tetanus, Polio, Pertussis booster'])
+
+var significance_colour = d3
+.scaleOrdinal()
+.domain(['Lower', 'Similar', 'Higher', 'England'])
+// .range([
+//        '#DB4325',
+//        '#E6E1BC',
+//        '#57c4ad', 
+//        '#8E8E8E']);
+       .range([
+        '#CC2629',
+        '#E7AF27',
+        '#3ECC26', 
+        '#8E8E8E']);
+
+
+
+
 
 // ! Load data
+// Vaccine terms
 $.ajax({
   url: "./outputs/vaccination_terms.json",
   dataType: "json",
@@ -20,31 +69,7 @@ $.ajax({
   },
 });
 
-// ! Load data
-$.ajax({
-  url: "./outputs/LTLA_annual_table.json",
-  dataType: "json",
-  async: false,
-  success: function(data) {
-    ltla_annual_table_df = data;
-   console.log('LTLA annual vaccine table data successfully loaded.')},
-  error: function (xhr) {
-    alert('LTLA vaccination annual data not loaded - ' + xhr.statusText);
-  },
-});
-
-$.ajax({
-  url: "./outputs/LTLA_quarterly_table.json",
-  dataType: "json",
-  async: false,
-  success: function(data) {
-    ltla_quarterly_table_df = data;
-   console.log('LTLA annual vaccine table data successfully loaded.')},
-  error: function (xhr) {
-    alert('LTLA vaccination annual data not loaded - ' + xhr.statusText);
-  },
-});
-
+// Load annual WSx time series data
 $.ajax({
   url: "./outputs/LTLA_annual.json",
   dataType: "json",
@@ -57,16 +82,33 @@ $.ajax({
   },
 });
 
-// ! Load data
-var LAD_boundaries = $.ajax({
-  url: "./outputs/west_sussex_ltlas.geojson",
+// West Sussex annual tables 2017/18 onwards for 1, 2, and 5 years.
+$.ajax({
+  url: "./outputs/LTLA_annual_table.json",
   dataType: "json",
-  success: console.log("LTLA boundary data successfully loaded."),
+  async: false,
+  success: function(data) {
+    ltla_annual_table_df = data;
+   console.log('LTLA annual vaccine table data successfully loaded.')},
   error: function (xhr) {
-    alert(xhr.statusText);
+    alert('LTLA vaccination annual data not loaded - ' + xhr.statusText);
   },
 });
 
+// West Sussex quarterly 2022/23 for 1, 2, and 5 years.
+$.ajax({
+  url: "./outputs/LTLA_quarterly_table.json",
+  dataType: "json",
+  async: false,
+  success: function(data) {
+    ltla_quarterly_table_df = data;
+   console.log('LTLA annual vaccine table data successfully loaded.')},
+  error: function (xhr) {
+    alert('LTLA vaccination annual data not loaded - ' + xhr.statusText);
+  },
+});
+
+// Load GP immunisation data for 1, 2, and 5 years.
 $.ajax({
     url: "./outputs/GP_immunisations.json",
     dataType: "json",
@@ -79,8 +121,32 @@ $.ajax({
     },
   });
 
+  $.ajax({
+    url: "./outputs/school_flu_immunisations.json",
+    dataType: "json",
+    async: false,
+    success: function(data) {
+      school_flu_immunisations_df = data;
+     console.log('School flu immunisation data successfully loaded.')},
+    error: function (xhr) {
+      alert('School flu immunisation data not loaded - ' + xhr.statusText);
+    },
+  });
 
-// ! Render LTLA table on load
+  $.ajax({
+    url: "./outputs/primary_school_flu_immunisations.json",
+    dataType: "json",
+    async: false,
+    success: function(data) {
+      primary_school_flu_immunisations_df = data;
+     console.log('Primary school flu immunisation data successfully loaded.')},
+    error: function (xhr) {
+      alert('School flu immunisation data not loaded - ' + xhr.statusText);
+    },
+  });
+
+
+// ! Render tables on load
 window.onload = () => {
   loadTable_ltla_12_months(ltla_12_months_df);
   loadTable_ltla_12_months_quarterly(ltla_12_months_quarterly_df);
@@ -88,29 +154,19 @@ window.onload = () => {
   loadTable_ltla_24_months_quarterly(ltla_24_months_quarterly_df);
   loadTable_ltla_5_years(ltla_5_years_df)
   loadTable_ltla_5_years_quarterly(ltla_5_years_quarterly_df);
+  loadTable_primary_seasonal_flu_uptake(wsx_primary_school_flu_immunisations_df)
+  loadTable_ltla_seasonal_flu_uptake(school_flu_immunisations_df);
 };
 
-// ! Set some parameters
-var benchmark_colour = d3
- .scaleOrdinal()
- .domain(['Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'])
- .range([
-        '#CC2629',
-        '#E7AF27',
-        '#3ECC26', 
-        '#8E8E8E']);
-
-// ! Set some parameters
-var benchmark_class = d3
- .scaleOrdinal()
- .domain(['Low (<90%)', 'Medium (90-95%)', 'High (95%+)', '-'])
- .range(['low_circle', 'medium_circle', 'high_circle', 'no_circle']);
-
-
- 	var ltla_table_labels = d3
-  .scaleOrdinal()
-  .domain(['DTaPIPVHibHepB', 'PCV2', 'MenB', 'Rota', 'MMR1', 'PCV Booster', 'Hib/MenC', 'DTaP/IPV/Hib(Hep)', 'MenB Booster', 'MMR2', 'DTaPIPV'])
-  .range(['DTaP/IPV/Hib/HepB vaccine*', 'Pneumococcal conjulate vaccine (PCV)', 'Meningococcal group B', 'Rotavirus', 'Measles, mumps, and rubella vaccine dose 1', 'PCV booster', 'Haemophilus influenzae type B and Meningococcal group C booster', '6-in-1 booster (three doses by second birthday)', 'Meningococcal group B booster', 'Measles, mumps, and rubella vaccine dose 1 and 2', 'Diphtheria, Tetanus, Polio, Pertussis booster'])
+// Load Local authority district tables data
+var LAD_boundaries = $.ajax({
+  url: "./outputs/west_sussex_ltlas.geojson",
+  dataType: "json",
+  success: console.log("LTLA boundary data successfully loaded."),
+  error: function (xhr) {
+    alert(xhr.statusText);
+  },
+});
 
 function gp_marker_style(feature) {
        return {
@@ -203,7 +259,6 @@ function loadTable_ltla_5_years(ltla_5_years_df) {
   tableBody.innerHTML = dataHTML;
 }
 
-
 ltla_5_years_quarterly_df = ltla_quarterly_table_df.filter(function (d) {
   return d.Age === '5 years' 
 });
@@ -217,6 +272,34 @@ function loadTable_ltla_5_years_quarterly(ltla_5_years_quarterly_df) {
   }
   tableBody.innerHTML = dataHTML;
 }
+
+wsx_primary_school_flu_immunisations_df = primary_school_flu_immunisations_df.filter(function (d) {
+  return d.Area === 'West Sussex' 
+});
+
+console.log(wsx_primary_school_flu_immunisations_df)
+
+function loadTable_primary_seasonal_flu_uptake(wsx_primary_school_flu_immunisations_df) {
+  const tableBody = document.getElementById("table_primary_seasonal_flu_body");
+  var dataHTML = "";
+
+  for (let item of wsx_primary_school_flu_immunisations_df) {
+  dataHTML += `<tr><td>${item['Year']}</td><td>${d3.format('.1%')(item['Proportion'])}</td><td>${d3.format(',.0f')(item['Numerator'])}</td><td>${d3.format(',.0f')(item['Denominator'])}</td></tr>`;
+  }
+  tableBody.innerHTML = dataHTML;
+}
+
+function loadTable_ltla_seasonal_flu_uptake(school_flu_immunisations_df) {
+  const tableBody = document.getElementById("table_ltla_seasonal_flu_body");
+  var dataHTML = "";
+
+  for (let item of school_flu_immunisations_df) {
+  dataHTML += `<tr><td>${item['Year group']}</td><td>${item['September 2018 to January 2019']}</td><td>${item['September 2019 to January 2020']}</td><td>${item['September 2020 to January 2021']}</td><td>${item['September 2021 to January 2022']}</td><td>${item['September 2022 to January 2023']}</td></tr>`;
+  }
+  tableBody.innerHTML = dataHTML;
+}
+
+// ! Maps
 
 // Specify that this code should run once the PCN_geojson data request is complete
 $.when(LAD_boundaries).done(function () {
@@ -849,44 +932,107 @@ return div;
 };
 legend_map_3.addTo(map_5_years);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 });
 
+var svg_primary_school_flu_uptake_timeseries = d3
+.select("#primary_school_flu_uptake_timeseries")
+.append("svg")
+.attr("width", width + margin.left + margin.right)
+.attr("height", height + margin.top + margin.bottom)
+.append("g")
+.attr("transform", 
+      "translate(" + margin.left + "," + margin.top + ")");
 
+var seasons_flu = d3
+.map(primary_school_flu_immunisations_df, function (d) {
+  return d.Year_short;
+})
+.keys();
+// seasons_flu = ['2019/20', '2020/21', '2021/22', '2022/23']
 
+// Group the data
+var seasonal_flu_areas_group = d3
+.nest() // nest function allows to group the calculation per level of a factor (in this case connect lines within a group together)
+.key(function (d) {
+  return d.Area;
+})
+.entries(primary_school_flu_immunisations_df);
 
+var x_primary_flu = d3
+.scaleBand()
+.domain(seasons_flu)
+.range([(margin.left), width]);
 
+var xAxis_primary_flu = svg_primary_school_flu_uptake_timeseries
+.append("g")
+.attr("transform", "translate(0," + (height - margin.bottom - margin.top) + ")")
+.call(
+  d3.axisBottom(x_primary_flu)
+);
 
+xAxis_primary_flu
+.selectAll("text")
+.style("text-anchor", 'middle')
+.style("font-size", ".8rem");
 
+var y_primary_flu = d3
+.scaleLinear()
+.domain([0,1])
+.range([height - (margin.top + margin.bottom), margin.top])
+.nice();
 
+var yAxis_primary_flu = svg_primary_school_flu_uptake_timeseries
+.append("g")
+.attr("transform", "translate(" + margin.left + ",0)")
+.call(d3.axisLeft(y_primary_flu).tickFormat(d3.format(".1%")));
 
+yAxis_primary_flu
+.selectAll("text")
+.style("font-size", ".8rem");
 
+// Lines
+var lines_flu_time_series = svg_primary_school_flu_uptake_timeseries
+.selectAll(".line")
+.data(seasonal_flu_areas_group)
+.enter()
+.append("path")
+.attr("id", "flu_lines")
+.attr("class", "flu_all_lines")
+.attr("stroke", function (d) {
+  return area_colours(d.key);
+})
+.attr("d", function (d) {
+  return d3
+    .line()
+    .x(function (d) {
+      return x_primary_flu(d.Year_short);
+    })
+    .y(function (d) {
+      return y_primary_flu(d.Proportion);
+    })(d.values);
+})
+.style("stroke-width", 1)
+// .on("mouseover", hover_vaccine_ts_1_lines)
+// .on("mouseout", mouseleave_vaccine_ts_1);
 
-
-
-
-
-
-
-
-// <img src ='${
-//       item.icon_path
-//     }' class = "icons_yo"></img>
+// points
+var dots_vaccine_ts_1 = svg_primary_school_flu_uptake_timeseries
+    .selectAll("circles")
+    .data(primary_school_flu_immunisations_df)
+    .enter()
+    .append("circle")
+    .attr("cx", function (d) {
+      return x_primary_flu(d.Year_short);
+    })
+    .attr("cy", function (d) {
+      return y_primary_flu(d.Proportion);
+    })
+    .style("fill", function (d) {
+      return significance_colour(d.Significance);
+    })
+    .attr("r", function (d) {
+      return circle_size_function(d.Area);
+    })
+    .attr("stroke", function (d) {
+      return '#000';
+    })

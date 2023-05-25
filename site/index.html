@@ -71,7 +71,7 @@
 
     <p>The map for age 12 months shows circles for DTaP/IPV/Hib/HepB vaccine, Men B, PCV dose 1, and Rotavirus for each GP practice coloured by coverage verses benchmark targets (red for less than 90%, amber for 90-95%, green for 95+% (denoted as low/medium/high coverage respectively), with a grey circle for those which could not be calculated); this is either because the practice has no eligible children at this time. Where the number of eligible children is less than five, the denominator is supressed even if the proportion is given.</p>
 
-    <h5 id = map_12_months_title>Map - coverage immunisations; 2021/22; 12 month olds</h5>
+    <h5 id = map_12_months_title>Map - GP coverage immunisations; 2021/22; 12 month olds</h5>
     <div id = 'map_12_months_id'></div>
 
     <h4>2022/23 quarterly data - early insight</h4>
@@ -116,6 +116,8 @@
     </table>
 
     <p>The map for age 24 months shows circles for DTaP/IPV/Hib vaccine, MMR (dose 1) vaccine, Hib/Men C vaccine, PCV booster, and Men B booster for each GP practice coloured by coverage verses benchmark targets (red for less than 90%, amber for 90-95%, green for 95+% (denoted as low/medium/high coverage respectively), with a grey circle for those which could not be calculated).</p>
+    
+    <h5 id = map_24_months_title>Map - GP coverage immunisations; 2021/22; 24 month olds</h5>
     <div id = 'map_24_months_id'></div>
     </section>
 
@@ -161,9 +163,8 @@
 
     <p>The map for age 5 shows circles for MMR (dose 1) vaccine, MMR (dose 2) vaccine, DTaP/IPV vaccine, DTaP/IPV/Hib vaccine, and Hib/Men C vaccine for each GP practice coloured by coverage verses benchmark targets (red for less than 90%, amber for 90-95%, green for 95+% (denoted as low/medium/high coverage respectively), with a grey circle for those which could not be calculated).</p>
 
-    <h5 id = map_5_years_title>Map - coverage immunisations; 2021/22; five year olds</h5>
+    <h5 id = map_5_years_title>Map - GP coverage immunisations; 2021/22; five year olds</h5>
     <div id = 'map_5_years_id'></div>
-
 
     <h4>2022/23 quarterly data - early insight</h4>
 
@@ -186,17 +187,55 @@
 
 <section id = 'school_influenza'>
 
-<h4>Seasonal Flu (Influenzae) vaccinations; Primary school-aged children September to January 2018/19 to September to January 2022/23;</h4>
+<h4>Seasonal Flu (Influenzae) vaccinations; School-aged children September to January 2018/19 to September to January 2022/23;</h4>
 <p>Influenza (also known as Flu) is a highly infectious viral illness spread by droplet infection. The flu vaccination is usually offered to people who are at greater risk of developing serious complications if they catch flu. However, extending the childhood influenza vaccination programme to healthy children provides direct protection for those immunised as well as indirectly protecting the remaining population by reducing transmission.</p>
 
 <p>Coverage data reflects all eligible children in school years reception to year 11 that have been vaccinated whether the vaccination took place in school, by GPs, or in pharmacies. Figures are provisional and may be incomplete due to the nature of the systems used to obtain data returns, which varies from provider to provider. Local NHS England teams and their providers submitted aggregate LA level vaccination data manually to PHE via the ImmForm website.</p>
 
-<p>In 2021 to 2022, the national ambition was to achieve at least 70% vaccine uptake in school aged children in Reception to Year 6 (age 4 to 11 years old).</p>
+<div class="good_to_know">
+  <p>In each seasonal flu vaccination programme (e.g. September - January), target year groups are announced for prioritising vaccination due to capacity and supply issues. In recent years additional year groups have been added to the priority list.</p>
+  <p>The COVID-19 pandemic had a big impact on the seasonal flu vaccination programme for a number of reasons.</p>
+  <p>As such, for some years there are no data for some year groups and/or uptake is very low.</p>
+</div>
 
+<p>In 2021 to 2022, the national ambition was to achieve at least 70% vaccine uptake in school aged children in Reception to Year 6 (age 4 to 11 years old). This has not been achieved locally or nationally.</p>
 
-<p>Data on seasonal flu coverage </p>
+<h5>Table - West Sussex primary school aged (Reception to year six pooled) seasonal flu vaccine coverage; 2019/20 to 2022/23;</h5>
+<table id = 'table_primary_seasonal_flu_years' style="margin-bottom: 20px" class = 'table_class'>
+  <thead>
+    <tr>
+      <th style = 'text-align: left;'>Season</th>
+      <th style = 'text-align: right;'>Proportion</th>
+      <th style = 'text-align: right;'>Number vaccinated</th>
+      <th style = 'text-align: right;'>Estimated eligible population</th>
+    </tr>
+  </thead>
+<tbody id = "table_primary_seasonal_flu_body"></tbody>
+</table>
 
+<p>The figure below shows a time series of seasonal flu uptake (proportion of eligible children) for primary school aged children in West Sussex compared to England. The orange line represents West Sussex and the colour of the circles denotes whether the proportion for West Sussex is statisticall significantly different to England for the time period. The grey line with smaller circles is the England uptake.</p>
 
+<h5>Figure - West Sussex primary school aged (Reception to year six pooled) seasonal flu vaccine coverage compared to England; 2019/20 to 2022/23;</h5>
+<div id="primary_school_flu_uptake_timeseries"></div>
+
+<p>West Sussex has consistently had a significantly higher uptake of seasonal flu vaccine compared to England except for in the 2022/23 season (September 2022 to January 2023) where uptake was significantly lower/worse in the county.</p>
+
+<p>The table below shows the uptake in West Sussex for each year group and time period.</p>
+
+<h5>Table - West Sussex school aged seasonal flu vaccine coverage; 2018/19 to 2022/23;</h5>
+<table id = 'table_ltla_seasonal_flu_years_quarterly' style="margin-bottom: 20px" class = 'table_class'>
+  <thead>
+    <tr>
+      <th style = 'text-align: left;'>Year group</th>
+      <th style = 'text-align: right;'>September 2018 to January 2019</th>
+      <th style = 'text-align: right;'>September 2019 to January 2020</th>
+      <th style = 'text-align: right;'>September 2020 to January 2021</th>
+      <th style = 'text-align: right;'>September 2021 to January 2022</th>
+      <th style = 'text-align: right;'>September 2022 to January 2023</th>
+    </tr>
+  </thead>
+<tbody id = "table_ltla_seasonal_flu_body"></tbody>
+</table>
 
 </section>
 

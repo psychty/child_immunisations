@@ -1,5 +1,5 @@
 # Loading some packages 
-packages <- c('easypackages', 'tidyr', 'ggplot2', 'dplyr', 'scales', 'readxl', 'readr', 'purrr', 'stringr', 'rgdal', 'spdplyr', 'geojsonio', 'rmapshaper', 'jsonlite', 'rgeos', 'sp', 'sf', 'maptools', 'ggpol', 'magick', 'officer', 'leaflet', 'leaflet.extras', 'zoo', 'fingertipsR', 'PostcodesioR', 'ggrepel', 'readODS', 'openxlsx',  'httr', 'rvest')
+packages <- c('easypackages', 'tidyr', 'ggplot2', 'dplyr', 'scales', 'readxl', 'readr', 'purrr', 'stringr', 'rgdal', 'spdplyr', 'geojsonio', 'rmapshaper', 'jsonlite', 'rgeos', 'sp', 'sf', 'maptools', 'ggpol', 'magick', 'officer', 'leaflet', 'leaflet.extras', 'zoo', 'fingertipsR', 'PostcodesioR', 'ggrepel', 'readODS', 'openxlsx',  'httr', 'rvest', 'PHEindicatormethods')
 install.packages(setdiff(packages, rownames(installed.packages())))
 easypackages::libraries(packages)
 
@@ -40,32 +40,32 @@ output_directory <- paste0(base_directory, '/site/outputs')
 # GP summary
 
 # Content for excel file intro page 
-
-title_1 <- 'Coverage of Childhood Vaccinations'
-subtitle_1 <- 'This data is experimental and should be treated with caution. It is not an official statistic.'
-
-intro_text_1 <- 'This workbook presents data on coverage of routine childhood vaccinations (from birth to age 5) in primary care settings in West Sussex. COVER data is provided by the Child Health Information Service (CHIS) providers and is reported in the public domain quarterly and annually.'
-
-quarterly_text_old_source <- 'https://www.gov.uk/government/statistics/cover-of-vaccination-evaluated-rapidly-cover-programme-2021-to-2022-quarterly-data'
-
-quarterly_text_new_source <- 'https://www.gov.uk/government/statistics/cover-of-vaccination-evaluated-rapidly-cover-programme-2022-to-2023-quarterly-data'
-
-routine_imms_schedule_source <- 'https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1055877/UKHSA-12155-routine-complete-immunisation-schedule_Feb2022.pdf'
-
-annual_text_source <- 'https://www.gov.uk/government/publications/cover-of-vaccination-evaluated-rapidly-cover-programme-annual-data'
-
-caveat_1 <- 'In 2019/20, Public Health England (PHE) published annual COVER data (previously published by NHS England). This was the first year where annual GP practice level coverage was based on a refreshed extract, which allowed for corrections to be made following quarterly submissions. This data is also aggregated in the National General Practice Profiles on Fingertips, although there is a time lag.'
-
-
-caveat_2 <-  'Annual GP practice level coverage data has also been published for 2020/21. Disruption due to the COVID-19 pandemic is likely to have caused some decreases in vaccine coverage, particularly for the 12 month cohort.'
-
-caveat_3 <- 'Annual data at higher geographies is also published by NHS Digital and is reproduced on fingertips. Data collections are quality assured at the time of collection by UKHSA and further validation is carried out by NHS Digital prior to publication (detailed here - https://digital.nhs.uk/data-and-information/publications/statistical/nhs-immunisation-statistics/england---2020-21/appendices).'
-
-caveat_4 <- 'Annual data for England, by financial year, is collected by the UK Health Security Agency (UKHSA) under the COVER programme with further checks and final publication by NHS Digital as national statistics. Annual data is more complete and should be used to look at longer term trends.'
-
-method_1 <- 'Where possible, published annual data has been presented from published sources (as oppoesed to aggregated data from quarterly releases). However, due to a lag in the release of annual data, coverage has been estimated from quarterly releases in some instances.'
-
-method_2 <- 'Due to suppression of small counts, data was not available for all quarters for a small number of GP Practices - estimated annual coverage is not presented at GP practice level in these cases. At PCN and West Sussex level, all available GP practice data was aggregated to the appropriate geography.Numerators and denominators therefore do not reflect the entire eligible cohort in cases where GP practice level data was incomplete. Recent quarterly data is also presented to give early insight into practices that may have low coverage, although this data is unvalidated.'
+# 
+# title_1 <- 'Coverage of Childhood Vaccinations'
+# subtitle_1 <- 'This data is experimental and should be treated with caution. It is not an official statistic.'
+# 
+# intro_text_1 <- 'This workbook presents data on coverage of routine childhood vaccinations (from birth to age 5) in primary care settings in West Sussex. COVER data is provided by the Child Health Information Service (CHIS) providers and is reported in the public domain quarterly and annually.'
+# 
+# quarterly_text_old_source <- 'https://www.gov.uk/government/statistics/cover-of-vaccination-evaluated-rapidly-cover-programme-2021-to-2022-quarterly-data'
+# 
+# quarterly_text_new_source <- 'https://www.gov.uk/government/statistics/cover-of-vaccination-evaluated-rapidly-cover-programme-2022-to-2023-quarterly-data'
+# 
+# routine_imms_schedule_source <- 'https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1055877/UKHSA-12155-routine-complete-immunisation-schedule_Feb2022.pdf'
+# 
+# annual_text_source <- 'https://www.gov.uk/government/publications/cover-of-vaccination-evaluated-rapidly-cover-programme-annual-data'
+# 
+# caveat_1 <- 'In 2019/20, Public Health England (PHE) published annual COVER data (previously published by NHS England). This was the first year where annual GP practice level coverage was based on a refreshed extract, which allowed for corrections to be made following quarterly submissions. This data is also aggregated in the National General Practice Profiles on Fingertips, although there is a time lag.'
+# 
+# 
+# caveat_2 <-  'Annual GP practice level coverage data has also been published for 2020/21. Disruption due to the COVID-19 pandemic is likely to have caused some decreases in vaccine coverage, particularly for the 12 month cohort.'
+# 
+# caveat_3 <- 'Annual data at higher geographies is also published by NHS Digital and is reproduced on fingertips. Data collections are quality assured at the time of collection by UKHSA and further validation is carried out by NHS Digital prior to publication (detailed here - https://digital.nhs.uk/data-and-information/publications/statistical/nhs-immunisation-statistics/england---2020-21/appendices).'
+# 
+# caveat_4 <- 'Annual data for England, by financial year, is collected by the UK Health Security Agency (UKHSA) under the COVER programme with further checks and final publication by NHS Digital as national statistics. Annual data is more complete and should be used to look at longer term trends.'
+# 
+# method_1 <- 'Where possible, published annual data has been presented from published sources (as oppoesed to aggregated data from quarterly releases). However, due to a lag in the release of annual data, coverage has been estimated from quarterly releases in some instances.'
+# 
+# method_2 <- 'Due to suppression of small counts, data was not available for all quarters for a small number of GP Practices - estimated annual coverage is not presented at GP practice level in these cases. At PCN and West Sussex level, all available GP practice data was aggregated to the appropriate geography.Numerators and denominators therefore do not reflect the entire eligible cohort in cases where GP practice level data was incomplete. Recent quarterly data is also presented to give early insight into practices that may have low coverage, although this data is unvalidated.'
 
 # IMD_2019 <- read_csv(url('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/845345/File_7_-_All_IoD2019_Scores__Ranks__Deciles_and_Population_Denominators_3.csv'))
 
@@ -105,7 +105,7 @@ if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202223_Q2.ods')) !
                 mode = 'wb')
 }
 
-# Next set of data is due to be released 28th March, with Q4 in June 2023, annual data due 1st September 2023 
+M # Next set of data is due to be released 28th March, with Q4 in June 2023, annual data due 1st September 2023 
 
 # https://www.gov.uk/government/publications/vaccine-coverage-statistics-publication-dates/cover-vaccine-coverage-data-submission-and-publication-schedule
 
@@ -1068,11 +1068,108 @@ areas <- c('Adur', 'Arun', 'Chichester', 'Crawley', 'Horsham', 'Mid Sussex', 'Wo
 # 
 # geojson_write(ms_simplify(geojson_json(lad_boundaries_spdf), keep = 0.3), file = paste0(output_directory, '/west_sussex_LTLAs.geojson'))
 
-# Seasonal flu - 2 and 3
-
-# Seasonal flu school age
+# Seasonal flu school age ####
 # https://www.gov.uk/government/statistics/seasonal-influenza-vaccine-uptake-in-children-of-school-age-monthly-data-2022-to-2023
 
+if(file.exists(paste0(data_directory, '/Child_immunisation_school_flu_201819.ods')) != TRUE){
+  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/780385/Child_Flu_Programme_Jan_2019_Tables_PrimarySchoolAge.ods',
+                paste0(data_directory, '/Child_immunisation_school_flu_201819.ods'),
+                mode = 'wb')
+}
+
+if(file.exists(paste0(data_directory, '/Child_immunisation_school_flu_201920.ods')) != TRUE){
+  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/867127/Child_Flu_Programme_January_2020_Tables_PrimarySchoolAge_FORMATTED.ods',
+                paste0(data_directory, '/Child_immunisation_school_flu_201920.ods'),
+                mode = 'wb')
+}
+
+if(file.exists(paste0(data_directory, '/Child_immunisation_school_flu_202021.ods')) != TRUE){
+  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/964663/Child_Flu_Programme_January_2021_Tables_PrimarySchoolAge_final.ods',
+                paste0(data_directory, '/Child_immunisation_school_flu_202021.ods'),
+                mode = 'wb')
+}
+
+if(file.exists(paste0(data_directory, '/Child_immunisation_school_flu_202122.ods')) != TRUE){
+  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1056997/Seasonal_influenza_vaccine_uptake_childhood_January_2122.ods',
+                paste0(data_directory, '/Child_immunisation_school_flu_202122.ods'),
+                mode = 'wb')
+}
+
+if(file.exists(paste0(data_directory, '/Child_immunisation_school_flu_202223.ods')) != TRUE){
+  download.file('https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1137931/UKHSA_Seasonal_Childhood_Flu_Vaccine_Uptake_January-2023.ods',
+                paste0(data_directory, '/Child_immunisation_school_flu_202223.ods'),
+                mode = 'wb')
+}
+
+# 2018/19 school age flu ####
+
+raw_flu_df <- read_csv(paste0(data_directory,'/flu_primary_uptake.csv'),
+         col_types = cols(Numerator = col_double(), Denominator = col_double())) %>% 
+  filter(Area %in% c('West Sussex', 'Total')) %>% 
+  mutate(Proportion = Numerator / Denominator) %>% 
+  mutate(Label = paste0(round((Proportion * 100),1), '% (', format(Numerator, big.mark = ',', trim = TRUE), '/', format(Denominator, big.mark = ',', trim = TRUE), ')')) %>% 
+  mutate(Area = ifelse(Area == 'Total','England', Area))
+
+# There is primary school coverage
+primary_school_df <- raw_flu_df %>% 
+  filter(Year %in% c('September 2019 to January 2020', 'September 2020 to January 2021', 'September 2021 to January 2022', 'September 2022 to January 2023')) %>% 
+  filter(`Year group` %in% c('Reception', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 6')) %>% 
+  group_by(Area, Year) %>% 
+  summarise(Numerator = sum(Numerator, na.rm = TRUE),
+            Denominator = sum(Denominator, na.rm = TRUE)) %>% 
+  mutate(Proportion = Numerator / Denominator) %>% 
+  mutate(Label = paste0(round((Proportion * 100),1), '% (', format(Numerator, big.mark = ',', trim = TRUE), '/', format(Denominator, big.mark = ',', trim = TRUE), ')'))  %>% 
+  ungroup() %>% 
+  mutate(phe_proportion(., Numerator, Denominator))
+
+eng_df <- primary_school_df %>% 
+  filter(Area == 'England') %>% 
+  select(Year, Eng_LCL = lowercl, Eng_UCL = uppercl)
+
+primary_school_df %>% 
+  left_join(eng_df, by = 'Year') %>% 
+  mutate(Significance = ifelse(Area == 'England', 'England', ifelse(lowercl > Eng_UCL, 'Higher', ifelse(uppercl < Eng_LCL, 'Lower', 'Similar')))) %>% 
+  select(Area, Year, Numerator, Denominator, Proportion, Lower_CL = lowercl, Upper_CL = uppercl, Significance) %>% 
+  mutate(Year_short = ifelse(Year == 'September 2019 to January 2020', '2019/20', ifelse(Year == 'September 2020 to January 2021', '2020/21',ifelse(Year == 'September 2021 to January 2022', '2021/22',ifelse(Year == 'September 2022 to January 2023', '2022/23', Year))))) %>%
+  toJSON() %>% 
+  write_lines(paste0(output_directory, '/primary_school_flu_immunisations.json'))
+
+primary_school_df %>% 
+  select(Area, Year, Label) %>% 
+  pivot_wider(names_from = 'Year',
+              values_from = 'Label') %>% 
+  mutate(`September 2019 to January 2020` = replace_na(`September 2019 to January 2020`, '-')) %>% 
+  mutate(`September 2020 to January 2021` = replace_na(`September 2020 to January 2021`, '-')) %>% 
+  mutate(`September 2021 to January 2022` = replace_na(`September 2021 to January 2022`, '-')) %>% 
+  mutate(`September 2022 to January 2023` = replace_na(`September 2022 to January 2023`, '-')) 
+
+PHEindicatormethods::phe_proportion(primary_school_df, x = Numerator, n = Denominator)[4]
+
+primary_school_df %>% 
+
+  
+
+flu_primary_uptake <- read_csv(paste0(data_directory,'/flu_primary_uptake.csv'),
+                               col_types = cols(Numerator = col_double(), Denominator = col_double())) %>% 
+  filter(Area == 'West Sussex') %>% 
+  mutate(Proportion = Numerator / Denominator) %>% 
+  mutate(Label = paste0(round((Proportion * 100),1), '% (', format(Numerator, big.mark = ',', trim = TRUE), '/', format(Denominator, big.mark = ',', trim = TRUE), ')')) %>%
+  select(Year, `Year group`, Label) %>% 
+  pivot_wider(names_from = 'Year',
+              values_from = 'Label') %>% 
+  mutate(`September 2018 to January 2019` = replace_na(`September 2018 to January 2019`, '-')) %>% 
+  mutate(`September 2019 to January 2020` = replace_na(`September 2019 to January 2020`, '-')) %>% 
+  mutate(`September 2020 to January 2021` = replace_na(`September 2020 to January 2021`, '-')) %>% 
+  mutate(`September 2021 to January 2022` = replace_na(`September 2021 to January 2022`, '-')) %>% 
+  mutate(`September 2022 to January 2023` = replace_na(`September 2022 to January 2023`, '-')) 
+
+
+
+flu_primary_uptake %>% 
+  toJSON() %>% 
+  write_lines(paste0(output_directory, '/school_flu_immunisations.json'))
+
+# Data is presented for secondary school-aged children for the first time in this month’s data. This season vaccination of younger children and those in a-risk groups were prioritised first. Vaccination in secondary schools and catch-up of all other eligible children will continue throughout the new year. Note that secondary school-aged children in clinical risk groups have been eligible since 1 September 2022. 
 
 # HPV school age
 # https://www.gov.uk/government/statistics/human-papillomavirus-hpv-vaccine-coverage-estimates-in-england-2021-to-2022
