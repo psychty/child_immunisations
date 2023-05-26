@@ -943,12 +943,26 @@ var svg_primary_school_flu_uptake_timeseries = d3
 .attr("transform", 
       "translate(" + margin.left + "," + margin.top + ")");
 
-var seasons_flu = d3
-.map(primary_school_flu_immunisations_df, function (d) {
-  return d.Year_short;
-})
-.keys();
-// seasons_flu = ['2019/20', '2020/21', '2021/22', '2022/23']
+// var seasons_flu = d3
+// .map(primary_school_flu_immunisations_df, function (d) {
+//   return d.Year_short;
+// })
+// .keys();
+seasons_flu = ['2019/20', '2020/21', '2021/22', '2022/23']
+
+// Tooltip
+var tooltip_seasonal_flu = d3
+  .select("#primary_school_flu_uptake_timeseries")
+  .append("div")
+  .style("opacity", 0)
+  .attr("class", "tooltip_class")
+  .style("position", "absolute")
+  .style("z-index", "10")
+  .style("background-color", "white")
+  .style("border", "solid")
+  .style("border-width", "1px")
+  .style("border-radius", "5px")
+  .style("padding", "10px");
 
 // Group the data
 var seasonal_flu_areas_group = d3
@@ -958,10 +972,41 @@ var seasonal_flu_areas_group = d3
 })
 .entries(primary_school_flu_immunisations_df);
 
+// Tooltip content
+var hover_seasonsal_flu_vaccine_points = function (d) {
+  tooltip_seasonal_flu
+  .html(
+    "<h4>" +
+      d.Area +
+      ' - '+
+      d.Year +
+      '</h4><p class = "side">Proportion: <b>' +
+      d3.format('.1%')(d.Proportion) +
+      " </b>(95% CI: " +
+      d3.format('.1%')(d.Lower_CL) +
+      "-" +
+      d3.format('.1%')(d.Upper_CL) +
+      ')</p><p>There were <b>' +
+      d3.format(',.0f')(d.Numerator) +
+      ' vaccinations reported</b> for primary school aged children in this season with an estimated <b>' +
+      d3.format(',.0f')(d.Denominator - d.Numerator) +
+      ' children left to vaccinate</b>.'
+  )
+  .style("opacity", 1)
+  .style("top", event.pageY - 10 + "px")
+  .style("left", event.pageX + 10 + "px")
+  .style("visibility", "visible");
+  };
+
+// No matter which function was called, on mouseleave restore everything back to the way it was.
+var mouseleave_seasonal_flu_vaccine = function (d) {
+  tooltip_seasonal_flu.style("visibility", "hidden");
+};
+
 var x_primary_flu = d3
-.scaleBand()
+.scalePoint()
 .domain(seasons_flu)
-.range([(margin.left), width]);
+.range([margin.left, width]);
 
 var xAxis_primary_flu = svg_primary_school_flu_uptake_timeseries
 .append("g")
@@ -1012,27 +1057,28 @@ var lines_flu_time_series = svg_primary_school_flu_uptake_timeseries
     })(d.values);
 })
 .style("stroke-width", 1)
-// .on("mouseover", hover_vaccine_ts_1_lines)
-// .on("mouseout", mouseleave_vaccine_ts_1);
 
 // points
 var dots_vaccine_ts_1 = svg_primary_school_flu_uptake_timeseries
-    .selectAll("circles")
-    .data(primary_school_flu_immunisations_df)
-    .enter()
-    .append("circle")
-    .attr("cx", function (d) {
-      return x_primary_flu(d.Year_short);
-    })
-    .attr("cy", function (d) {
-      return y_primary_flu(d.Proportion);
-    })
-    .style("fill", function (d) {
-      return significance_colour(d.Significance);
-    })
-    .attr("r", function (d) {
-      return circle_size_function(d.Area);
-    })
-    .attr("stroke", function (d) {
-      return '#000';
-    })
+.selectAll("circles")
+.data(primary_school_flu_immunisations_df)
+.enter()
+.append("circle")
+.attr("cx", function (d) {
+  return x_primary_flu(d.Year_short);
+})
+.attr("cy", function (d) {
+  return y_primary_flu(d.Proportion);
+})
+.style("fill", function (d) {
+  return significance_colour(d.Significance);
+})
+.attr("r", function (d) {
+  return circle_size_function(d.Area);
+})
+.attr("stroke", function (d) {
+  return '#000';
+})
+.on("mouseover", hover_seasonsal_flu_vaccine_points)
+.on("mouseout", mouseleave_seasonal_flu_vaccine);
+

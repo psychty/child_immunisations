@@ -51,10 +51,18 @@ a:hover {
    /* stroke: #d2d2d2; */
  }
   
-/* svg{
-   background-color: antiquewhite;
-} */
-
+ .tooltip_class {
+   max-width: 25vw;
+   padding-left: 5px;
+   padding-right: 5px;
+   font-size: 0.8rem;
+   background: #ffffff;
+   color: #000000;
+   border-radius: 5px;
+   border: 1px solid #000;
+   text-align: left !important;
+ }
+ 
 .good_to_know {
  border: 2px solid #cc0052;
  border-radius: 5px;
