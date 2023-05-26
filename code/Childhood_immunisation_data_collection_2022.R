@@ -105,7 +105,7 @@ if(file.exists(paste0(data_directory, '/Child_immunisation_GP_202223_Q2.ods')) !
                 mode = 'wb')
 }
 
-M # Next set of data is due to be released 28th March, with Q4 in June 2023, annual data due 1st September 2023 
+ # Next set of data is due to be released 28th March, with Q4 in June 2023, annual data due 1st September 2023 
 
 # https://www.gov.uk/government/publications/vaccine-coverage-statistics-publication-dates/cover-vaccine-coverage-data-submission-and-publication-schedule
 
@@ -175,9 +175,7 @@ Vaccination_terms_df %>%
   toJSON() %>% 
   write_lines(paste0(output_directory, '/vaccination_terms.json'))
 
-# Annual data files ####
-
-# County level
+# 2017/18 ####
 
 LA_201718_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
                                sheet = "Table 8b", skip = 21) %>% 
@@ -192,6 +190,32 @@ LA_201718_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '12 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
+Eng_201718_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
+                                sheet = "Table 8b", skip = 21) %>%
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `(thousands)`, DTaPIPVHibHepB = `(DTaP/IPV/Hib)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
+  filter(Area != 'Local Authority (LA)' & !is.na(Area)) %>% 
+  mutate(Denominator = as.numeric(Denominator) * 1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2017/18',
+         Age = '12 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_201718_12_m_p <- LA_201718_12_m_p %>% 
+  bind_rows(Eng_201718_12_m_p) %>% 
+  unique()
+
+Eng_201718_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
+                            sheet = "Table 8c", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, DTaPIPVHibHepB = `(DTaP/IPV/Hib)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>%  
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Numerator') %>% 
+  mutate(Numerator = as.numeric(Numerator)) 
 
 LA_201718_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
                              sheet = "Table 8c", skip = 21) %>% 
@@ -201,12 +225,13 @@ LA_201718_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201
                cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
                values_to = 'Numerator') %>% 
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_201718_12_m) %>% 
   left_join(LA_201718_12_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_201718_12_m_p)
+rm(LA_201718_12_m_p, Eng_201718_12_m_p, Eng_201718_12_m)
 
 LA_201718_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
                                sheet = "Table 9b", skip = 20) %>% 
@@ -221,20 +246,47 @@ LA_201718_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '24 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
-LA_201718_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+Eng_201718_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
+        sheet = "Table 9b", skip = 20) %>% 
+           filter(...1 == 'England') %>% 
+           select(Area = ...1, Denominator = `(thousands)`, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`) %>% 
+           mutate(Denominator = as.numeric(Denominator)*1000) %>% 
+           pivot_longer(names_to = 'Item',
+                        cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`),
+                        values_to = 'Proportion') %>% 
+           mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+           mutate(Year = '2017/18',
+                  Age = '24 months') %>% 
+           left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_201718_24_m_p <- LA_201718_24_m_p %>% 
+  bind_rows(Eng_201718_24_m_p) %>% 
+  unique()
+         
+Eng_201718_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
+                              sheet = "Table 9c", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator)) 
+
+LA_201718_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
                              sheet = "Table 9c", skip = 20) %>% 
-  select(Area = ...2, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`) %>% 
+  select(Area = ...2, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`) %>% 
   filter(Area != 'Local Authority (LA)' & !is.na(Area)) %>% 
   pivot_longer(names_to = 'Item',
                cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`),
                values_to = 'Numerator') %>%
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_201718_24_m) %>% 
   left_join(LA_201718_24_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_201718_24_m_p)
+rm(LA_201718_24_m_p, Eng_201718_24_m, Eng_201718_24_m_p)
 
 LA_201718_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
                               sheet = "Table 10b", skip = 20) %>% 
@@ -250,6 +302,33 @@ LA_201718_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_20
   left_join(Vaccination_terms_df, by = 'Item') %>% 
   mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
 
+Eng_201718_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
+                              sheet = "Table 10b", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `aged 5`, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  mutate(Denominator = as.numeric(Denominator)* 1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2017/18',
+         Age = '5 years') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') %>% 
+  mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
+
+LA_201718_5_y_p <- LA_201718_5_y_p %>% 
+  bind_rows(Eng_201718_5_y_p) %>% 
+  unique()
+
+Eng_201718_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
+                            sheet = "Table 10c", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator))
+
 LA_201718_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_201718.xlsx", 
                             sheet = "Table 10c", skip = 20) %>% 
   select(Area = ...2, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
@@ -258,21 +337,22 @@ LA_201718_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_2017
                cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
                values_to = 'Numerator') %>%
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_201718_5_y) %>% 
   left_join(LA_201718_5_y_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_201718_5_y_p)
+rm(LA_201718_5_y_p, Eng_201718_5_y, Eng_201718_5_y_p)
 
 LA_201718 <- LA_201718_12_m %>% 
   bind_rows(LA_201718_24_m) %>% 
   bind_rows(LA_201718_5_y) %>%
-  filter(Area == 'West Sussex')
+  filter(Area %in% c('West Sussex', 'England'))
 
 rm(LA_201718_12_m, LA_201718_24_m, LA_201718_5_y)
 
-# 2017/18 #####
+# 2018/19 #####
 LA_201819_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
                                sheet = "Table 8b", skip = 21) %>% 
   select(Area = ...2, Denominator = `(thousands)`, DTaPIPVHibHepB = `(DTaP/IPV/Hib)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
@@ -286,6 +366,32 @@ LA_201819_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '12 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
+Eng_201819_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
+                               sheet = "Table 8b", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `(thousands)`, DTaPIPVHibHepB = `(DTaP/IPV/Hib)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
+  mutate(Denominator = as.numeric(Denominator)*1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2018/19',
+         Age = '12 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_201819_12_m_p <- LA_201819_12_m_p %>% 
+  bind_rows(Eng_201819_12_m_p) %>% 
+  unique()
+
+Eng_201819_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
+                             sheet = "Table 8c", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, DTaPIPVHibHepB = `(DTaP/IPV/Hib)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Numerator')  %>% 
+  mutate(Numerator = as.numeric(Numerator))
+
 LA_201819_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
                              sheet = "Table 8c", skip = 21) %>% 
   select(Area = ...2, DTaPIPVHibHepB = `(DTaP/IPV/Hib)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
@@ -293,13 +399,14 @@ LA_201819_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201
   pivot_longer(names_to = 'Item',
                cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
                values_to = 'Numerator') %>% 
-  mutate(Numerator = as.numeric(Numerator)) %>% 
+  mutate(Numerator = as.numeric(Numerator)) %>%
+  bind_rows(Eng_201819_12_m) %>% 
   left_join(LA_201819_12_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_201819_12_m_p)
+rm(LA_201819_12_m_p, Eng_201819_12_m, Eng_201819_12_m_p)
 
 LA_201819_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
                                sheet = "Table 9b", skip = 20) %>% 
@@ -314,6 +421,31 @@ LA_201819_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '24 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
+Eng_201819_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
+                               sheet = "Table 9b", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `(thousands)`, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`, `MenB Booster` = MenB) %>% 
+  mutate(Denominator = as.numeric(Denominator) * 1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2018/19',
+         Age = '24 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_201819_24_m_p <- LA_201819_24_m_p %>% 
+  bind_rows(Eng_201819_24_m_p) %>% 
+  unique()
+
+Eng_201819_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
+                             sheet = "Table 9c", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`, `MenB Booster` = MenB) %>%   pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator)) 
+
 LA_201819_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
                              sheet = "Table 9c", skip = 20) %>% 
   select(Area = ...2, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`, `MenB Booster` = MenB) %>% 
@@ -322,12 +454,13 @@ LA_201819_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201
                cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
                values_to = 'Numerator') %>%
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_201819_24_m) %>% 
   left_join(LA_201819_24_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_201819_24_m_p)
+rm(LA_201819_24_m_p, Eng_201819_24_m, Eng_201819_24_m_p)
 
 LA_201819_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
                               sheet = "Table 10b", skip = 20) %>% 
@@ -343,6 +476,34 @@ LA_201819_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_20
   left_join(Vaccination_terms_df, by = 'Item') %>% 
   mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
 
+Eng_201819_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
+                              sheet = "Table 10b", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `aged 5`, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  mutate(Denominator = as.numeric(Denominator) *1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2018/19',
+         Age = '5 years') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') %>% 
+  mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
+
+
+LA_201819_5_y_p <- LA_201819_5_y_p %>% 
+  bind_rows(Eng_201819_5_y_p) %>% 
+  unique()
+
+Eng_201819_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
+                            sheet = "Table 10c", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator)) 
+
 LA_201819_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_201819.xlsx", 
                             sheet = "Table 10c", skip = 20) %>% 
   select(Area = ...2, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
@@ -351,21 +512,22 @@ LA_201819_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_2018
                cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
                values_to = 'Numerator') %>%
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_201819_5_y) %>% 
   left_join(LA_201819_5_y_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_201819_5_y_p)
+rm(LA_201819_5_y_p, Eng_201819_5_y, Eng_201819_5_y_p)
 
 LA_201819 <- LA_201819_12_m %>% 
   bind_rows(LA_201819_24_m) %>% 
   bind_rows(LA_201819_5_y) %>% 
-  filter(Area == 'West Sussex')
+  filter(Area %in% c('West Sussex', 'England'))
 
 rm(LA_201819_12_m, LA_201819_24_m, LA_201819_5_y)
 
-# 2019/20
+# 2019/20 ####
 LA_201920_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
                                sheet = "Table 8b", skip = 21) %>% 
   select(Area = ...2, Denominator = `(thousands)`, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
@@ -379,6 +541,32 @@ LA_201920_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '12 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
+Eng_201920_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                               sheet = "Table 8b", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `(thousands)`, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
+  mutate(Denominator = as.numeric(Denominator)*1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2019/20',
+         Age = '12 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_201920_12_m_p <- LA_201920_12_m_p %>% 
+  bind_rows(Eng_201920_12_m_p) %>% 
+  unique()
+
+Eng_201920_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                             sheet = "Table 8c", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Numerator') %>% 
+  mutate(Numerator = as.numeric(Numerator))
+
 LA_201920_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
                              sheet = "Table 8c", skip = 21) %>% 
   select(Area = ...2, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)`, MenB = MenB, Rota = Rotavirus) %>% 
@@ -387,12 +575,13 @@ LA_201920_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201
                cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
                values_to = 'Numerator') %>% 
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_201920_12_m) %>% 
   left_join(LA_201920_12_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_201920_12_m_p)
+rm(LA_201920_12_m_p, Eng_201920_12_m, Eng_201920_12_m_p)
 
 LA_201920_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
                                sheet = "Table 9b", skip = 20) %>% 
@@ -407,6 +596,32 @@ LA_201920_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '24 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
+Eng_201920_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                               sheet = "Table 9b", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `(thousands)`, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`, `MenB Booster` = MenB) %>% 
+  mutate(Denominator = as.numeric(Denominator)* 1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2019/20',
+         Age = '24 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_201920_24_m_p <- LA_201920_24_m_p %>% 
+  bind_rows(Eng_201920_24_m_p) %>% 
+  unique()
+
+Eng_201920_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                             sheet = "Table 9c", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`, `MenB Booster` = MenB) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator))
+
 LA_201920_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
                              sheet = "Table 9c", skip = 20) %>% 
   select(Area = ...2, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`, `MenB Booster` = MenB) %>% 
@@ -414,13 +629,14 @@ LA_201920_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_201
   pivot_longer(names_to = 'Item',
                cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
                values_to = 'Numerator') %>%
-  mutate(Numerator = as.numeric(Numerator)) %>% 
+  mutate(Numerator = as.numeric(Numerator)) %>%
+  bind_rows(Eng_201920_24_m) %>% 
   left_join(LA_201920_24_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_201920_24_m_p)
+rm(LA_201920_24_m_p, Eng_201920_24_m_p, Eng_201920_24_m)
 
 LA_201920_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
                               sheet = "Table 10b", skip = 20) %>% 
@@ -436,6 +652,33 @@ LA_201920_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_20
   left_join(Vaccination_terms_df, by = 'Item') %>% 
   mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
 
+Eng_201920_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                              sheet = "Table 10b", skip = 20) %>%
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `aged 5`, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  mutate(Denominator = as.numeric(Denominator)*1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2019/20',
+         Age = '5 years') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') %>% 
+  mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
+
+LA_201920_5_y_p <- LA_201920_5_y_p %>% 
+  bind_rows(Eng_201920_5_y_p) %>% 
+  unique()
+
+Eng_201920_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
+                            sheet = "Table 10c", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator)) 
+
 LA_201920_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_201920.xlsx", 
                             sheet = "Table 10c", skip = 20) %>% 
   select(Area = ...2, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
@@ -444,17 +687,18 @@ LA_201920_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_2019
                cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
                values_to = 'Numerator') %>%
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_201920_5_y) %>% 
   left_join(LA_201920_5_y_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_201920_5_y_p)
+rm(LA_201920_5_y_p, Eng_201920_5_y, Eng_201920_5_y_p)
 
 LA_201920 <- LA_201920_12_m %>% 
   bind_rows(LA_201920_24_m) %>% 
   bind_rows(LA_201920_5_y) %>% 
-  filter(Area == 'West Sussex')
+  filter(Area %in% c('West Sussex', 'England'))
 
 rm(LA_201920_12_m, LA_201920_24_m, LA_201920_5_y)
 
@@ -472,6 +716,32 @@ LA_202021_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '12 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
+Eng_202021_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
+                               sheet = "Table 8b", skip = 22) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `(thousands)`, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)(3)`, MenB = MenB, Rota = Rotavirus) %>% 
+  mutate(Denominator = as.numeric(Denominator)*1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2020/21',
+         Age = '12 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_202021_12_m_p <- LA_202021_12_m_p %>% 
+  bind_rows(Eng_202021_12_m_p) %>% 
+  unique()
+
+Eng_202021_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
+                             sheet = "Table 8c", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, DTaPIPVHibHepB = `(DTaP/IPV/Hib)(2)`, PCV2 = `(PCV)(3)`, MenB = MenB, Rota = Rotavirus) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Numerator') %>% 
+  mutate(Numerator = as.numeric(Numerator)) 
+
 LA_202021_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
                              sheet = "Table 8c", skip = 21) %>% 
   select(Area = ...2, DTaPIPVHibHepB = `(DTaP/IPV/Hib)(2)`, PCV2 = `(PCV)(3)`, MenB = MenB, Rota = Rotavirus) %>% 
@@ -480,12 +750,13 @@ LA_202021_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202
                cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
                values_to = 'Numerator') %>% 
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_202021_12_m) %>% 
   left_join(LA_202021_12_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_202021_12_m_p)
+rm(LA_202021_12_m_p, Eng_202021_12_m, Eng_202021_12_m_p)
 
 LA_202021_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
                                sheet = "Table 9b", skip = 21) %>% 
@@ -500,6 +771,32 @@ LA_202021_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '24 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
+Eng_202021_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
+                               sheet = "Table 9b", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `(thousands)`, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib/HepB)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC` = `Hib/MenC(3)`, `MenB Booster` = MenB) %>% 
+  mutate(Denominator = as.numeric(Denominator)*1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2020/21',
+         Age = '24 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_202021_24_m_p <- LA_202021_24_m_p %>% 
+  bind_rows(Eng_202021_24_m_p) %>% 
+  unique()
+
+Eng_202021_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
+                             sheet = "Table 9c", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib/HepB)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC` = `Hib/MenC(3)`, `MenB Booster` = MenB) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator))
+
 LA_202021_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
                              sheet = "Table 9c", skip = 21) %>% 
   select(Area = ...2, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib/HepB)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC` = `Hib/MenC(3)`, `MenB Booster` = MenB) %>% 
@@ -508,12 +805,13 @@ LA_202021_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202
                cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
                values_to = 'Numerator') %>%
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_202021_24_m) %>% 
   left_join(LA_202021_24_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_202021_24_m_p)
+rm(LA_202021_24_m_p, Eng_202021_24_m, Eng_202021_24_m_p)
 
 LA_202021_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
                               sheet = "Table 10b", skip = 20) %>% 
@@ -529,6 +827,33 @@ LA_202021_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_20
   left_join(Vaccination_terms_df, by = 'Item') %>% 
   mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
 
+Eng_202021_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
+                              sheet = "Table 10b", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `aged 5`, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  mutate(Denominator = as.numeric(Denominator) *1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2020/21',
+         Age = '5 years') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') %>% 
+  mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
+
+LA_202021_5_y_p <- LA_202021_5_y_p %>% 
+  bind_rows(Eng_202021_5_y_p) %>% 
+  unique()
+
+Eng_202021_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
+                            sheet = "Table 10c", skip = 19) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator)) 
+
 LA_202021_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_202021.xlsx", 
                             sheet = "Table 10c", skip = 19) %>% 
   select(Area = ...2, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
@@ -537,17 +862,18 @@ LA_202021_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_2020
                cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
                values_to = 'Numerator') %>%
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_202021_5_y) %>% 
   left_join(LA_202021_5_y_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_202021_5_y_p)
+rm(LA_202021_5_y_p, Eng_202021_5_y, Eng_202021_5_y_p)
 
 LA_202021 <- LA_202021_12_m %>% 
   bind_rows(LA_202021_24_m) %>% 
   bind_rows(LA_202021_5_y) %>% 
-  filter(Area == 'West Sussex')
+  filter(Area %in% c('West Sussex', 'England'))
 
 rm(LA_202021_12_m, LA_202021_24_m, LA_202021_5_y)
 
@@ -566,6 +892,32 @@ LA_202122_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '12 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
+Eng_202122_12_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
+                               sheet = "Table 8b", skip = 22) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `(thousands)`, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)(3)`, MenB = MenB, Rota = Rotavirus) %>% 
+  mutate(Denominator = as.numeric(Denominator)*1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2021/22',
+         Age = '12 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_202122_12_m_p <- LA_202122_12_m_p %>% 
+  bind_rows(Eng_202122_12_m_p) %>% 
+  unique()
+
+Eng_202122_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
+                             sheet = "Table 8c", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)(3)`, MenB = MenB, Rota = Rotavirus) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
+               values_to = 'Numerator') %>% 
+  mutate(Numerator = as.numeric(Numerator)) 
+
 LA_202122_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
                              sheet = "Table 8c", skip = 21) %>% 
   select(Area = ...2, DTaPIPVHibHepB = `(DTaP/IPV/Hib/HepB)(2)`, PCV2 = `(PCV)(3)`, MenB = MenB, Rota = Rotavirus) %>% 
@@ -573,13 +925,14 @@ LA_202122_12_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202
   pivot_longer(names_to = 'Item',
                cols = c(DTaPIPVHibHepB, PCV2, MenB, Rota),
                values_to = 'Numerator') %>% 
-  mutate(Numerator = as.numeric(Numerator)) %>% 
+  mutate(Numerator = as.numeric(Numerator)) %>%
+  bind_rows(Eng_202122_12_m) %>% 
   left_join(LA_202122_12_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_202122_12_m_p)
+rm(LA_202122_12_m_p, Eng_202122_12_m, Eng_202122_12_m_p)
 
 LA_202122_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
                                sheet = "Table 9b", skip = 21) %>% 
@@ -594,6 +947,33 @@ LA_202122_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
          Age = '24 months') %>% 
   left_join(Vaccination_terms_df, by = 'Item') 
 
+Eng_202122_24_m_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
+                               sheet = "Table 9b", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `(thousands)`, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib/HepB)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC`, `MenB Booster` = MenB) %>% 
+  mutate(Denominator = as.numeric(Denominator)*1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2021/22',
+         Age = '24 months') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') 
+
+LA_202122_24_m_p <- LA_202122_24_m_p %>% 
+  bind_rows(Eng_202122_24_m_p) %>% 
+  unique()
+
+Eng_202122_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
+                             sheet = "Table 9c", skip = 21) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib/HepB)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC` = `Hib/MenC`, `MenB Booster` = MenB) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator))
+
+
 LA_202122_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
                              sheet = "Table 9c", skip = 21) %>% 
   select(Area = ...2, `DTaP/IPV/Hib(Hep)` = `(DTaP/IPV/Hib/HepB)(2)`, MMR1 = MMR, `PCV Booster` = `(PCV)`, `Hib/MenC` = `Hib/MenC`, `MenB Booster` = MenB) %>% 
@@ -602,12 +982,13 @@ LA_202122_24_m <- read_excel("child_immunisations/data/Child_immunisation_LA_202
                cols = c(`DTaP/IPV/Hib(Hep)`, MMR1, `PCV Booster`, `Hib/MenC`, `MenB Booster`),
                values_to = 'Numerator') %>%
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_202122_24_m) %>% 
   left_join(LA_202122_24_m_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_202122_24_m_p)
+rm(LA_202122_24_m_p, Eng_202122_24_m_p, Eng_202122_24_m)
 
 LA_202122_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
                               sheet = "Table 10b", skip = 20) %>% 
@@ -623,6 +1004,33 @@ LA_202122_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_20
   left_join(Vaccination_terms_df, by = 'Item') %>% 
   mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
 
+Eng_202122_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
+                              sheet = "Table 10b", skip = 20) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, Denominator = `aged 5`, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  mutate(Denominator = as.numeric(Denominator)*1000) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion) / 100) %>% 
+  mutate(Year = '2021/22',
+         Age = '5 years') %>% 
+  left_join(Vaccination_terms_df, by = 'Item') %>% 
+  mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
+
+LA_202122_5_y_p <- LA_202122_5_y_p %>% 
+  bind_rows(Eng_202122_5_y_p) %>% 
+  unique()
+
+Eng_202122_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
+                            sheet = "Table 10c", skip = 19) %>% 
+  filter(...1 == 'England') %>% 
+  select(Area = ...1, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
+  pivot_longer(names_to = 'Item',
+               cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
+               values_to = 'Numerator') %>%
+  mutate(Numerator = as.numeric(Numerator))
+
 LA_202122_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_202122.xlsx", 
                             sheet = "Table 10c", skip = 19) %>% 
   select(Area = ...2, `DTaP/IPV/Hib` = `(DTaP/IPV/Hib)`, DTaPIPV = Pertussis, MMR1 = MMR...8, MMR2 = MMR...9, `Hib/MenC`) %>% 
@@ -631,27 +1039,44 @@ LA_202122_5_y <- read_excel("child_immunisations/data/Child_immunisation_LA_2021
                cols = c(`DTaP/IPV/Hib`, MMR1, MMR2, DTaPIPV, `Hib/MenC`),
                values_to = 'Numerator') %>%
   mutate(Numerator = as.numeric(Numerator)) %>% 
+  bind_rows(Eng_202122_5_y) %>% 
   left_join(LA_202122_5_y_p, by = c('Area', 'Item')) %>% 
   mutate(Benchmark = factor(ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)')), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, Area, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
-rm(LA_202122_5_y_p)
+rm(LA_202122_5_y_p, Eng_202122_5_y, Eng_202122_5_y_p)
 
 LA_202122 <- LA_202122_12_m %>% 
   bind_rows(LA_202122_24_m) %>% 
   bind_rows(LA_202122_5_y) %>% 
-  filter(Area == 'West Sussex')
+  filter(Area %in% c('West Sussex', 'England'))
 
 rm(LA_202122_12_m, LA_202122_24_m, LA_202122_5_y)
 
-LA_annual_df <- LA_201718 %>% 
+lookup_terms <- data.frame(Item = c('DTaPIPVHibHepB', 'PCV2', 'MenB', 'Rota', 'MMR1', 'PCV Booster', 'Hib/MenC', 'DTaP/IPV/Hib(Hep)', 'MenB Booster', 'MMR2', 'DTaPIPV'), Description = c('DTaP/IPV/Hib/HepB vaccine*', 'Pneumococcal conjulate vaccine (PCV)', 'Meningococcal group B', 'Rotavirus', 'Measles, mumps, and rubella vaccine dose 1', 'PCV booster', 'Haemophilus influenzae type B and Meningococcal group C booster', '6-in-1 booster (three doses by second birthday)', 'Meningococcal group B booster', 'Measles, mumps, and rubella vaccine dose 1 and 2', 'Diphtheria, Tetanus, Polio, Pertussis booster'))
+
+LA_annual_df_a <- LA_201718 %>% 
   bind_rows(LA_201819) %>% 
   bind_rows(LA_201920) %>% 
   bind_rows(LA_202021) %>% 
-  bind_rows(LA_202122) 
+  bind_rows(LA_202122) %>% 
+  left_join(lookup_terms, by = 'Item') %>% 
+  mutate(phe_proportion(., Numerator, Denominator)) %>% 
+  select(!c('Term', 'statistic', 'method', 'confidence', 'value'))
 
-LA_annual_table_values <- LA_annual_df %>% 
+eng_annual_df <- LA_annual_df_a %>% 
+  filter(Area == 'England') %>% 
+  select(Year, Age, Item, Eng_LCL = lowercl, Eng_UCL = uppercl)
+
+LA_annual_df <- LA_annual_df_a %>% 
+  left_join(eng_annual_df, by = c('Year', 'Age', 'Item')) %>% 
+  mutate(Significance = ifelse(Area == 'England', 'England', ifelse(lowercl > Eng_UCL, 'Higher', ifelse(uppercl < Eng_LCL, 'Lower', 'Similar')))) %>% 
+  select(Area, Year, Age, Item, Description, Numerator, Denominator, Proportion, Lower_CL = lowercl, Upper_CL = uppercl, Benchmark, Significance) %>% 
+  ungroup()
+
+LA_annual_table_values <- LA_annual_df %>%
+  filter(Area == 'West Sussex') %>% 
   select(Age, Year, Item, Proportion) %>% 
   mutate(Proportion = ifelse(is.na(Proportion), '-', paste0(round(Proportion * 100, 1), '%'))) %>% 
   mutate(Proportion = ifelse(Year == '2021/22' & Age == '12 months' & Item == 'DTaPIPVHibHepB', '94.9%', Proportion)) %>% 
@@ -660,6 +1085,7 @@ LA_annual_table_values <- LA_annual_df %>%
   mutate(`2017/18` = replace_na(`2017/18`, '-')) 
 
 LA_annual_table_labels <- LA_annual_df %>%
+  filter(Area == 'West Sussex') %>% 
   select(Age, Year, Item, Numerator, Denominator, Proportion) %>%
   mutate(Proportion = ifelse(is.na(Proportion), '-', paste0(round(Proportion *100, 1), '% (', format(Numerator, big.mark = ','),'/', format(Denominator, big.mark = ','),')'))) %>%
   select(!c(Numerator, Denominator)) %>% 
@@ -668,6 +1094,7 @@ LA_annual_table_labels <- LA_annual_df %>%
   mutate(`2017/18` = replace_na(`2017/18`, '-')) 
 
 LA_annual_table_benchmark_values <- LA_annual_df %>% 
+  filter(Area == 'West Sussex') %>% 
   select(Age, Year, Item, Benchmark) %>% 
   mutate(Benchmark = ifelse(is.na(Benchmark), '-', as.character(Benchmark))) %>% 
   pivot_wider(names_from = 'Year',
