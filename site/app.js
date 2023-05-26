@@ -1,9 +1,12 @@
 // ! Parameters
 
 // ! Flu figure
+
+var width = window.innerWidth * 0.8 - 20;
+
 var margin = {top: 10, right: 50, bottom: 20, left: 30},
-    width = 460 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+    flu_figure_width = (width *.5) - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
 
 var areas = ['West Sussex', 'England']
 var area_colours = d3
@@ -937,7 +940,7 @@ legend_map_3.addTo(map_5_years);
 var svg_primary_school_flu_uptake_timeseries = d3
 .select("#primary_school_flu_uptake_timeseries")
 .append("svg")
-.attr("width", width + margin.left + margin.right)
+.attr("width", flu_figure_width + margin.left + margin.right)
 .attr("height", height + margin.top + margin.bottom)
 .append("g")
 .attr("transform", 
@@ -974,29 +977,31 @@ var seasonal_flu_areas_group = d3
 
 // Tooltip content
 var hover_seasonsal_flu_vaccine_points = function (d) {
-  tooltip_seasonal_flu
-  .html(
-    "<h4>" +
-      d.Area +
-      ' - '+
-      d.Year +
-      '</h4><p class = "side">Proportion: <b>' +
-      d3.format('.1%')(d.Proportion) +
-      " </b>(95% CI: " +
-      d3.format('.1%')(d.Lower_CL) +
-      "-" +
-      d3.format('.1%')(d.Upper_CL) +
-      ')</p><p>There were <b>' +
-      d3.format(',.0f')(d.Numerator) +
-      ' vaccinations reported</b> for primary school aged children in this season with an estimated <b>' +
-      d3.format(',.0f')(d.Denominator - d.Numerator) +
-      ' children left to vaccinate</b>.'
-  )
-  .style("opacity", 1)
-  .style("top", event.pageY - 10 + "px")
-  .style("left", event.pageX + 10 + "px")
-  .style("visibility", "visible");
-  };
+tooltip_seasonal_flu
+.html(
+"<h4>" +
+  d.Area +
+  ' - '+
+  d.Year_short +
+  ' season </h4><b> ' +
+  d.Year +
+  '</b><p>Proportion: <b>' +
+  d3.format('.1%')(d.Proportion) +
+  " </b>(95% CI: " +
+  d3.format('.1%')(d.Lower_CL) +
+  "-" +
+  d3.format('.1%')(d.Upper_CL) +
+  ')</p><p>There were <b>' +
+  d3.format(',.0f')(d.Numerator) +
+  ' vaccinations reported</b> for primary school aged children in this season with an estimated <b>' +
+  d3.format(',.0f')(d.Denominator - d.Numerator) +
+  ' children left to vaccinate</b>.'
+)
+.style("opacity", 1)
+.style("top", event.pageY - 10 + "px")
+.style("left", event.pageX + 10 + "px")
+.style("visibility", "visible");
+};
 
 // No matter which function was called, on mouseleave restore everything back to the way it was.
 var mouseleave_seasonal_flu_vaccine = function (d) {
@@ -1006,7 +1011,7 @@ var mouseleave_seasonal_flu_vaccine = function (d) {
 var x_primary_flu = d3
 .scalePoint()
 .domain(seasons_flu)
-.range([margin.left, width]);
+.range([margin.left, flu_figure_width]);
 
 var xAxis_primary_flu = svg_primary_school_flu_uptake_timeseries
 .append("g")
