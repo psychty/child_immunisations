@@ -1005,7 +1005,6 @@ yAxis_ts_12m
 .selectAll("text")
 .style("font-size", ".8rem");
 
-
 var chosen_12_month_vaccine = d3
 .select("#vaccine_12_month_uptake_timeseries_button")
 .property("value");
@@ -1162,6 +1161,235 @@ d3.select("#vaccine_12_month_uptake_timeseries_button").on("change", function (d
     .property("value");
     update_vaccine_12m_ts();
 });
+
+
+// ! Age 24 months time series figure interactive 
+
+var svg_flu_uptake_timeseries_24_months = d3
+.select("#vaccine_24_month_uptake_timeseries")
+.append("svg")
+.attr("width", ts_figure_width + margin.left + margin.right)
+.attr("height", ts_figure_height + margin.top + margin.bottom)
+.append("g")
+.attr("transform", 
+      "translate(" + margin.left + "," + margin.top + ")");
+
+
+var ts_24_m_data = ltla_annual_df.filter(function (d) {
+  return d.Age === '24 months' 
+});
+
+var vaccine_ts_24m_items = d3
+.map(ts_24_m_data, function (d) {
+  return d.Description;
+})
+.keys();
+
+// vaccine_ts_24m_items = ['DTaP/IPV/Hib/HepB vaccine*', 'Meningococcal group B', 'Rotavirus']
+
+d3.select("#vaccine_24_month_uptake_timeseries_button")
+  .selectAll("myOptions")
+  .data(vaccine_ts_24m_items)
+  .enter()
+  .append("option")
+  .text(function (d) {
+    return d;
+  })
+  .attr("value", function (d) {
+    return d;
+  });
+
+var x_ts_24m = d3
+.scalePoint()
+.domain(['2017/18', '2018/19', '2019/20', '2020/21', '2021/22'])
+.range([margin.left, ts_figure_width]);
+
+var xAxis_ts_24m = svg_flu_uptake_timeseries_24_months
+.append("g")
+.attr("transform", "translate(0," + (ts_figure_height - margin.bottom - margin.top) + ")")
+.call(
+d3.axisBottom(x_ts_24m)
+);
+
+xAxis_ts_24m
+.selectAll("text")
+.style("text-anchor", 'middle')
+.style("font-size", ".8rem");
+
+var y_ts_24m = d3
+.scaleLinear()
+.domain([0.8,1])
+.range([ts_figure_height - (margin.top + margin.bottom), margin.top])
+.nice();
+
+var yAxis_ts_24m = svg_flu_uptake_timeseries_24_months
+.append("g")
+.attr("transform", "translate(" + margin.left + ",0)")
+.call(d3.axisLeft(y_ts_12m).tickFormat(d3.format(".1%")));
+
+yAxis_ts_24m
+.selectAll("text")
+.style("font-size", ".8rem");
+
+var chosen_24_month_vaccine = d3
+.select("#vaccine_24_month_uptake_timeseries_button")
+.property("value");
+
+d3.select("#vaccine_24_month_uptake_timeseries_title").html(function (d) {
+  return (
+    'Figure - ' +
+    chosen_24_month_vaccine +
+    ' vaccine coverage compared to England; 2017/18 to 2021/22; ' +
+    ' West Sussex compared to England; 24 months schedule;'
+  );
+});
+
+var chosen_ts_24_m_data = ltla_annual_df.filter(function (d) {
+  return d.Age === '24 months' &&
+  d.Description === chosen_24_month_vaccine
+});
+
+// Group the data
+var vaccine_ts_24m_areas_group = d3
+.nest() 
+.key(function (d) {
+  return d.Area;
+})
+.entries(chosen_ts_24_m_data);
+
+// Lines
+var lines_ts_24_m = svg_flu_uptake_timeseries_24_months
+.selectAll(".line")
+.data(vaccine_ts_24m_areas_group)
+.enter()
+// .transition()
+// .duration(1000)
+.append("path")
+.attr("id", "flu_lines")
+.attr("class", "flu_all_lines")
+.attr("stroke", function (d) {
+  return area_colours(d.key);
+})
+.attr("d", function (d) {
+  return d3
+    .line()
+    .x(function (d) {
+      return x_ts_24m(d.Year);
+    })
+    .y(function (d) {
+      return y_ts_24m(d.Proportion);
+    })(d.values);
+})
+.style("stroke-width", 1)
+
+// points
+var dots_ts_24_m = svg_flu_uptake_timeseries_24_months
+.selectAll("circles")
+.data(chosen_ts_24_m_data)
+.enter()
+// .transition()
+// .duration(1000)
+.append("circle")
+.attr("cx", function (d) {
+  return x_ts_24m(d.Year);
+})
+.attr("cy", function (d) {
+  return y_ts_24m(d.Proportion);
+})
+.style("fill", function (d) {
+  return significance_colour(d.Significance);
+})
+.attr("r", function (d) {
+  return circle_size_function(d.Area);
+})
+.attr("stroke", function (d) {
+  return '#000';
+})
+// .on("mouseover", hover_seasonsal_flu_vaccine_points)
+// .on("mouseout", mouseleave_seasonal_flu_vaccine);
+
+function update_vaccine_24m_ts(){
+
+// Retrieve the selected 24 month vaccine
+var chosen_24_month_vaccine = d3
+.select("#vaccine_24_month_uptake_timeseries_button")
+.property("value");
+
+d3.select("#vaccine_24_month_uptake_timeseries_title").html(function (d) {
+  return (
+    'Figure - ' +
+    chosen_24_month_vaccine +
+    ' vaccine coverage compared to England; 2017/18 to 2021/22; ' +
+    ' West Sussex compared to England; 24 months schedule;'
+  );
+});
+
+var chosen_ts_24_m_data = ltla_annual_df.filter(function (d) {
+  return d.Age === '24 months' &&
+  d.Description === chosen_24_month_vaccine
+});
+
+// Group the data
+var vaccine_ts_24m_areas_group = d3
+.nest() 
+.key(function (d) {
+  return d.Area;
+})
+.entries(chosen_ts_24_m_data);
+
+// TODO handle missing data
+
+lines_ts_24_m 
+.data(vaccine_ts_24m_areas_group)
+// .enter()
+.transition()
+.duration(1000)
+.attr("d", function (d) {
+  return d3
+    .line()
+    .x(function (d) {
+      return x_ts_24m(d.Year);
+    })
+    .y(function (d) {
+      return y_ts_24m(d.Proportion);
+    })(d.values);
+})
+
+// points
+dots_ts_24_m
+.data(chosen_ts_24_m_data)
+// .enter()
+.transition()
+.duration(1000)
+.attr("cx", function (d) {
+  return x_ts_24m(d.Year);
+})
+.attr("cy", function (d) {
+  return y_ts_24m(d.Proportion);
+})
+.style("fill", function (d) {
+  return significance_colour(d.Significance);
+})
+.attr("r", function (d) {
+  return circle_size_function(d.Area);
+})
+// .on("mouseover", hover_seasonsal_flu_vaccine_points)
+// .on("mouseout", mouseleave_seasonal_flu_vaccine);
+
+}
+
+update_vaccine_24m_ts()
+
+// Whenever the select value is changed fire the update vaccine_12m_ts function
+d3.select("#vaccine_24_month_uptake_timeseries_button").on("change", function (d) {
+  var selected_pcr_tested_area = d3
+    .select("#vaccine_24_month_uptake_timeseries_button")
+    .property("value");
+    update_vaccine_24m_ts();
+});
+
+
+
 
 // ! Seasonal flu
 
