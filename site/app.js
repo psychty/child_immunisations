@@ -959,6 +959,7 @@ var vaccine_ts_12m_items = d3
 })
 .keys();
 
+vaccine_ts_12m_items = ['Pneumococcal conjulate vaccine (PCV)']
 vaccine_ts_12m_items = ['DTaP/IPV/Hib/HepB vaccine*', 'Meningococcal group B', 'Rotavirus']
 
 d3.select("#vaccine_12_month_uptake_timeseries_button")
@@ -1225,7 +1226,7 @@ var y_ts_24m = d3
 var yAxis_ts_24m = svg_flu_uptake_timeseries_24_months
 .append("g")
 .attr("transform", "translate(" + margin.left + ",0)")
-.call(d3.axisLeft(y_ts_12m).tickFormat(d3.format(".1%")));
+.call(d3.axisLeft(y_ts_24m).tickFormat(d3.format(".1%")));
 
 yAxis_ts_24m
 .selectAll("text")
@@ -1388,6 +1389,230 @@ d3.select("#vaccine_24_month_uptake_timeseries_button").on("change", function (d
     update_vaccine_24m_ts();
 });
 
+// ! Age 5 years time series figure interactive 
+
+var svg_flu_uptake_timeseries_5_years = d3
+.select("#vaccine_5_year_uptake_timeseries")
+.append("svg")
+.attr("width", ts_figure_width + margin.left + margin.right)
+.attr("height", ts_figure_height + margin.top + margin.bottom)
+.append("g")
+.attr("transform", 
+      "translate(" + margin.left + "," + margin.top + ")");
+
+
+var ts_5_y_data = ltla_annual_df.filter(function (d) {
+  return d.Age === '5 years' 
+});
+
+var vaccine_ts_5y_items = d3
+.map(ts_5_y_data, function (d) {
+  return d.Description;
+})
+.keys();
+
+// vaccine_ts_5y_items = ['DTaP/IPV/Hib/HepB vaccine*', 'Meningococcal group B', 'Rotavirus']
+console.log(ts_5_y_data)
+d3.select("#vaccine_5_year_uptake_timeseries_button")
+  .selectAll("myOptions")
+  .data(vaccine_ts_5y_items)
+  .enter()
+  .append("option")
+  .text(function (d) {
+    return d;
+  })
+  .attr("value", function (d) {
+    return d;
+  });
+
+var x_ts_5y = d3
+.scalePoint()
+.domain(['2017/18', '2018/19', '2019/20', '2020/21', '2021/22'])
+.range([margin.left, ts_figure_width]);
+
+var xAxis_ts_5y = svg_flu_uptake_timeseries_5_years
+.append("g")
+.attr("transform", "translate(0," + (ts_figure_height - margin.bottom - margin.top) + ")")
+.call(
+d3.axisBottom(x_ts_5y)
+);
+
+xAxis_ts_5y
+.selectAll("text")
+.style("text-anchor", 'middle')
+.style("font-size", ".8rem");
+
+var y_ts_5y = d3
+.scaleLinear()
+.domain([0.8,1])
+.range([ts_figure_height - (margin.top + margin.bottom), margin.top])
+.nice();
+
+var yAxis_ts_5y = svg_flu_uptake_timeseries_5_years
+.append("g")
+.attr("transform", "translate(" + margin.left + ",0)")
+.call(d3.axisLeft(y_ts_5y).tickFormat(d3.format(".1%")));
+
+yAxis_ts_5y
+.selectAll("text")
+.style("font-size", ".8rem");
+
+var chosen_5_year_vaccine = d3
+.select("#vaccine_5_year_uptake_timeseries_button")
+.property("value");
+
+d3.select("#vaccine_5_year_uptake_timeseries_title").html(function (d) {
+  return (
+    'Figure - ' +
+    chosen_5_year_vaccine +
+    ' vaccine coverage compared to England; 2017/18 to 2021/22; ' +
+    ' West Sussex compared to England; five year schedule;'
+  );
+});
+
+var chosen_ts_5_y_data = ltla_annual_df.filter(function (d) {
+  return d.Age === '5 years' &&
+  d.Description === chosen_5_year_vaccine
+});
+
+// Group the data
+var vaccine_ts_5y_areas_group = d3
+.nest() 
+.key(function (d) {
+  return d.Area;
+})
+.entries(chosen_ts_5_y_data);
+
+// Lines
+var lines_ts_5_y = svg_flu_uptake_timeseries_5_years
+.selectAll(".line")
+.data(vaccine_ts_5y_areas_group)
+.enter()
+// .transition()
+// .duration(1000)
+.append("path")
+.attr("id", "flu_lines")
+.attr("class", "flu_all_lines")
+.attr("stroke", function (d) {
+  return area_colours(d.key);
+})
+.attr("d", function (d) {
+  return d3
+    .line()
+    .x(function (d) {
+      return x_ts_5y(d.Year);
+    })
+    .y(function (d) {
+      return y_ts_5y(d.Proportion);
+    })(d.values);
+})
+.style("stroke-width", 1)
+
+// points
+var dots_ts_5_y = svg_flu_uptake_timeseries_5_years
+.selectAll("circles")
+.data(chosen_ts_5_y_data)
+.enter()
+// .transition()
+// .duration(1000)
+.append("circle")
+.attr("cx", function (d) {
+  return x_ts_5y(d.Year);
+})
+.attr("cy", function (d) {
+  return y_ts_5y(d.Proportion);
+})
+.style("fill", function (d) {
+  return significance_colour(d.Significance);
+})
+.attr("r", function (d) {
+  return circle_size_function(d.Area);
+})
+.attr("stroke", function (d) {
+  return '#000';
+})
+// .on("mouseover", hover_seasonsal_flu_vaccine_points)
+// .on("mouseout", mouseleave_seasonal_flu_vaccine);
+
+function update_vaccine_5y_ts(){
+
+// Retrieve the selected 5 year vaccine
+var chosen_5_year_vaccine = d3
+.select("#vaccine_5_year_uptake_timeseries_button")
+.property("value");
+
+d3.select("#vaccine_5_year_uptake_timeseries_title").html(function (d) {
+  return (
+    'Figure - ' +
+    chosen_5_year_vaccine +
+    ' vaccine coverage compared to England; 2017/18 to 2021/22; ' +
+    ' West Sussex compared to England; 5 years schedule;'
+  );
+});
+
+var chosen_ts_5_y_data = ltla_annual_df.filter(function (d) {
+  return d.Age === '5 years' &&
+  d.Description === chosen_5_year_vaccine
+});
+
+// Group the data
+var vaccine_ts_5y_areas_group = d3
+.nest() 
+.key(function (d) {
+  return d.Area;
+})
+.entries(chosen_ts_5_y_data);
+
+// TODO handle missing data
+
+lines_ts_5_y 
+.data(vaccine_ts_5y_areas_group)
+// .enter()
+.transition()
+.duration(1000)
+.attr("d", function (d) {
+  return d3
+    .line()
+    .x(function (d) {
+      return x_ts_5y(d.Year);
+    })
+    .y(function (d) {
+      return y_ts_5y(d.Proportion);
+    })(d.values);
+})
+
+// points
+dots_ts_5_y
+.data(chosen_ts_5_y_data)
+// .enter()
+.transition()
+.duration(1000)
+.attr("cx", function (d) {
+  return x_ts_5y(d.Year);
+})
+.attr("cy", function (d) {
+  return y_ts_5y(d.Proportion);
+})
+.style("fill", function (d) {
+  return significance_colour(d.Significance);
+})
+.attr("r", function (d) {
+  return circle_size_function(d.Area);
+})
+// .on("mouseover", hover_seasonsal_flu_vaccine_points)
+// .on("mouseout", mouseleave_seasonal_flu_vaccine);
+
+}
+
+update_vaccine_5y_ts()
+
+// Whenever the select value is changed fire the update vaccine_12m_ts function
+d3.select("#vaccine_5_year_uptake_timeseries_button").on("change", function (d) {
+  var selected_pcr_tested_area = d3
+    .select("#vaccine_5_year_uptake_timeseries_button")
+    .property("value");
+    update_vaccine_5y_ts();
+});
 
 
 
