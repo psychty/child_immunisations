@@ -24,12 +24,13 @@ var circle_size_function = d3
 
 var benchmark_colour = d3
 .scaleOrdinal()
-.domain(['Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'])
+.domain(['Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients', 'Missing'])
 .range([
        '#CC2629',
        '#E7AF27',
        '#3ECC26', 
-       '#8E8E8E']);
+       '#8E8E8E',
+      null]);
 
 var benchmark_class = d3
 .scaleOrdinal()
@@ -44,7 +45,7 @@ var ltla_table_labels = d3
 
 var significance_colour = d3
 .scaleOrdinal()
-.domain(['Lower', 'Similar', 'Higher', 'England'])
+.domain(['Lower', 'Similar', 'Higher', 'England', 'Missing'])
 // .range([
 //        '#DB4325',
 //        '#E6E1BC',
@@ -54,11 +55,30 @@ var significance_colour = d3
         '#CC2629',
         '#E7AF27',
         '#3ECC26', 
-        '#8E8E8E']);
+        '#8E8E8E',
+      '#ffffff']);
 
 
-
-
+var border_colour = d3
+.scaleOrdinal()
+.domain(['Lower', 'Similar', 'Higher', 'England', 'Missing'])
+.range([
+      '#000000',
+      '#000000',
+      '#000000', 
+      '#000000',
+      '#ffffff']);
+      
+var visibility_function = d3
+.scaleOrdinal()
+.domain(['Lower', 'Similar', 'Higher', 'England', 'Missing'])
+.range([
+      'visible',
+      'visible',
+      'visible', 
+      'visible',
+      'hidden']);
+      
 
 // ! Load data
 // Vaccine terms
@@ -1032,30 +1052,80 @@ var vaccine_ts_12m_areas_group = d3
 })
 .entries(chosen_ts_12_m_data);
 
+// Tooltip
+var tooltip_12m_ts = d3
+  .select("#vaccine_12_month_uptake_timeseries")
+  .append("div")
+  .style("opacity", 0)
+  .attr("class", "tooltip_class")
+  .style("position", "absolute")
+  .style("z-index", "10")
+  .style("background-color", "white")
+  .style("border", "solid")
+  .style("border-width", "1px")
+  .style("border-radius", "5px")
+  .style("padding", "10px");
+  
+// Tooltip content
+var hover_12m_ts_vaccine_points = function (d) {
+  tooltip_12m_ts
+  .html(
+  "<b>" +
+    d.Area +
+    ' - '+
+    d.Description +
+    ' - ' +
+    d.Year +
+    '</b><p>Proportion: <b>' +
+    d3.format('.1%')(d.Proportion) +
+    " </b>(95% CI: " +
+    d3.format('.1%')(d.Lower_CL) +
+    "-" +
+    d3.format('.1%')(d.Upper_CL) +
+    ')</p><p>There were <b>' +
+    d3.format(',.0f')(d.Numerator) +
+    ' vaccinations reported</b> for children aged ' +
+    d.Age + ' in this season with an estimated <b>' +
+    d3.format(',.0f')(d.Denominator - d.Numerator) +
+    ' children left to vaccinate</b>.'
+  )
+  .style("opacity", 1)
+  .style("top", event.pageY - 10 + "px")
+  .style("left", event.pageX + 10 + "px")
+  .style("visibility", "visible");
+  };
+  
+  // No matter which function was called, on mouseleave restore everything back to the way it was.
+  var mouseleave_12m_ts_vaccine = function (d) {
+    tooltip_12m_ts.style("visibility", "hidden");
+  };
+  
+
+
 // Lines
-var lines_ts_12_m = svg_flu_uptake_timeseries_12_months
-.selectAll(".line")
-.data(vaccine_ts_12m_areas_group)
-.enter()
-// .transition()
-// .duration(1000)
-.append("path")
-.attr("id", "flu_lines")
-.attr("class", "flu_all_lines")
-.attr("stroke", function (d) {
-  return area_colours(d.key);
-})
-.attr("d", function (d) {
-  return d3
-    .line()
-    .x(function (d) {
-      return x_ts_12m(d.Year);
-    })
-    .y(function (d) {
-      return y_ts_12m(d.Proportion);
-    })(d.values);
-})
-.style("stroke-width", 1)
+// var lines_ts_12_m = svg_flu_uptake_timeseries_12_months
+// .selectAll(".line")
+// .data(vaccine_ts_12m_areas_group)
+// .enter()
+// // .transition()
+// // .duration(1000)
+// .append("path")
+// .attr("id", "flu_lines")
+// .attr("class", "flu_all_lines")
+// .attr("stroke", function (d) {
+//   return area_colours(d.key);
+// })
+// .attr("d", function (d) {
+//   return d3
+//     .line()
+//     .x(function (d) {
+//       return x_ts_12m(d.Year);
+//     })
+//     .y(function (d) {
+//       return y_ts_12m(d.Proportion);
+//     })(d.values);
+// })
+// .style("stroke-width", 1)
 
 // points
 var dots_ts_12_m = svg_flu_uptake_timeseries_12_months
@@ -1078,10 +1148,13 @@ var dots_ts_12_m = svg_flu_uptake_timeseries_12_months
   return circle_size_function(d.Area);
 })
 .attr("stroke", function (d) {
-  return '#000';
+  return border_colour(d.Significance);
 })
-// .on("mouseover", hover_seasonsal_flu_vaccine_points)
-// .on("mouseout", mouseleave_seasonal_flu_vaccine);
+.attr("visibility", function (d) {
+  return visibility_function(d.Significance);
+})
+.on("mouseover", hover_12m_ts_vaccine_points)
+.on("mouseout", mouseleave_12m_ts_vaccine);
 
 function update_vaccine_12m_ts(){
 
@@ -1114,21 +1187,21 @@ var vaccine_ts_12m_areas_group = d3
 
 // TODO handle missing data
 
-lines_ts_12_m 
-.data(vaccine_ts_12m_areas_group)
-// .enter()
-.transition()
-.duration(1000)
-.attr("d", function (d) {
-  return d3
-    .line()
-    .x(function (d) {
-      return x_ts_12m(d.Year);
-    })
-    .y(function (d) {
-      return y_ts_12m(d.Proportion);
-    })(d.values);
-})
+// lines_ts_12_m 
+// .data(vaccine_ts_12m_areas_group)
+// // .enter()
+// .transition()
+// .duration(1000)
+// .attr("d", function (d) {
+//   return d3
+//     .line()
+//     .x(function (d) {
+//       return x_ts_12m(d.Year);
+//     })
+//     .y(function (d) {
+//       return y_ts_12m(d.Proportion);
+//     })(d.values);
+// })
 
 // points
 dots_ts_12_m
@@ -1147,6 +1220,12 @@ dots_ts_12_m
 })
 .attr("r", function (d) {
   return circle_size_function(d.Area);
+})
+.attr("stroke", function (d) {
+  return border_colour(d.Significance);
+})
+.attr("visibility", function (d) {
+  return visibility_function(d.Significance);
 })
 // .on("mouseover", hover_seasonsal_flu_vaccine_points)
 // .on("mouseout", mouseleave_seasonal_flu_vaccine);
@@ -1250,6 +1329,56 @@ var chosen_ts_24_m_data = ltla_annual_df.filter(function (d) {
   d.Description === chosen_24_month_vaccine
 });
 
+
+// Tooltip
+var tooltip_24m_ts = d3
+  .select("#vaccine_24_month_uptake_timeseries")
+  .append("div")
+  .style("opacity", 0)
+  .attr("class", "tooltip_class")
+  .style("position", "absolute")
+  .style("z-index", "10")
+  .style("background-color", "white")
+  .style("border", "solid")
+  .style("border-width", "1px")
+  .style("border-radius", "5px")
+  .style("padding", "10px");
+  
+// Tooltip content
+var hover_24m_ts_vaccine_points = function (d) {
+  tooltip_24m_ts
+  .html(
+  "<b>" +
+    d.Area +
+    ' - '+
+    d.Description +
+    ' - ' +
+    d.Year +
+    '</b><p>Proportion: <b>' +
+    d3.format('.1%')(d.Proportion) +
+    " </b>(95% CI: " +
+    d3.format('.1%')(d.Lower_CL) +
+    "-" +
+    d3.format('.1%')(d.Upper_CL) +
+    ')</p><p>There were <b>' +
+    d3.format(',.0f')(d.Numerator) +
+    ' vaccinations reported</b> for children aged ' +
+    d.Age + ' in this season with an estimated <b>' +
+    d3.format(',.0f')(d.Denominator - d.Numerator) +
+    ' children left to vaccinate</b>.'
+  )
+  .style("opacity", 1)
+  .style("top", event.pageY - 10 + "px")
+  .style("left", event.pageX + 10 + "px")
+  .style("visibility", "visible");
+  };
+  
+  // No matter which function was called, on mouseleave restore everything back to the way it was.
+  var mouseleave_24m_ts_vaccine = function (d) {
+    tooltip_24m_ts.style("visibility", "hidden");
+  };
+  
+
 // Group the data
 var vaccine_ts_24m_areas_group = d3
 .nest() 
@@ -1258,30 +1387,30 @@ var vaccine_ts_24m_areas_group = d3
 })
 .entries(chosen_ts_24_m_data);
 
-// Lines
-var lines_ts_24_m = svg_flu_uptake_timeseries_24_months
-.selectAll(".line")
-.data(vaccine_ts_24m_areas_group)
-.enter()
-// .transition()
-// .duration(1000)
-.append("path")
-.attr("id", "flu_lines")
-.attr("class", "flu_all_lines")
-.attr("stroke", function (d) {
-  return area_colours(d.key);
-})
-.attr("d", function (d) {
-  return d3
-    .line()
-    .x(function (d) {
-      return x_ts_24m(d.Year);
-    })
-    .y(function (d) {
-      return y_ts_24m(d.Proportion);
-    })(d.values);
-})
-.style("stroke-width", 1)
+// // Lines
+// var lines_ts_24_m = svg_flu_uptake_timeseries_24_months
+// .selectAll(".line")
+// .data(vaccine_ts_24m_areas_group)
+// .enter()
+// // .transition()
+// // .duration(1000)
+// .append("path")
+// .attr("id", "flu_lines")
+// .attr("class", "flu_all_lines")
+// .attr("stroke", function (d) {
+//   return area_colours(d.key);
+// })
+// .attr("d", function (d) {
+//   return d3
+//     .line()
+//     .x(function (d) {
+//       return x_ts_24m(d.Year);
+//     })
+//     .y(function (d) {
+//       return y_ts_24m(d.Proportion);
+//     })(d.values);
+// })
+// .style("stroke-width", 1)
 
 // points
 var dots_ts_24_m = svg_flu_uptake_timeseries_24_months
@@ -1304,10 +1433,13 @@ var dots_ts_24_m = svg_flu_uptake_timeseries_24_months
   return circle_size_function(d.Area);
 })
 .attr("stroke", function (d) {
-  return '#000';
+  return border_colour(d.Significance);
 })
-// .on("mouseover", hover_seasonsal_flu_vaccine_points)
-// .on("mouseout", mouseleave_seasonal_flu_vaccine);
+.attr("visibility", function (d) {
+  return visibility_function(d.Significance);
+})
+.on("mouseover", hover_24m_ts_vaccine_points)
+.on("mouseout", mouseleave_24m_ts_vaccine);
 
 function update_vaccine_24m_ts(){
 
@@ -1340,21 +1472,21 @@ var vaccine_ts_24m_areas_group = d3
 
 // TODO handle missing data
 
-lines_ts_24_m 
-.data(vaccine_ts_24m_areas_group)
-// .enter()
-.transition()
-.duration(1000)
-.attr("d", function (d) {
-  return d3
-    .line()
-    .x(function (d) {
-      return x_ts_24m(d.Year);
-    })
-    .y(function (d) {
-      return y_ts_24m(d.Proportion);
-    })(d.values);
-})
+// lines_ts_24_m 
+// .data(vaccine_ts_24m_areas_group)
+// // .enter()
+// .transition()
+// .duration(1000)
+// .attr("d", function (d) {
+//   return d3
+//     .line()
+//     .x(function (d) {
+//       return x_ts_24m(d.Year);
+//     })
+//     .y(function (d) {
+//       return y_ts_24m(d.Proportion);
+//     })(d.values);
+// })
 
 // points
 dots_ts_24_m
@@ -1374,8 +1506,14 @@ dots_ts_24_m
 .attr("r", function (d) {
   return circle_size_function(d.Area);
 })
-// .on("mouseover", hover_seasonsal_flu_vaccine_points)
-// .on("mouseout", mouseleave_seasonal_flu_vaccine);
+.attr("stroke", function (d) {
+  return border_colour(d.Significance);
+})
+.attr("visibility", function (d) {
+  return visibility_function(d.Significance);
+})
+// .on("mouseover", hover_24m_ts_vaccine_points)
+// .on("mouseout", mouseleave_24m_ts_vaccine);
 
 }
 
@@ -1412,7 +1550,7 @@ var vaccine_ts_5y_items = d3
 .keys();
 
 // vaccine_ts_5y_items = ['DTaP/IPV/Hib/HepB vaccine*', 'Meningococcal group B', 'Rotavirus']
-console.log(ts_5_y_data)
+
 d3.select("#vaccine_5_year_uptake_timeseries_button")
   .selectAll("myOptions")
   .data(vaccine_ts_5y_items)
@@ -1475,6 +1613,56 @@ var chosen_ts_5_y_data = ltla_annual_df.filter(function (d) {
   d.Description === chosen_5_year_vaccine
 });
 
+
+// Tooltip
+var tooltip_5y_ts = d3
+  .select("#vaccine_5_year_uptake_timeseries")
+  .append("div")
+  .style("opacity", 0)
+  .attr("class", "tooltip_class")
+  .style("position", "absolute")
+  .style("z-index", "10")
+  .style("background-color", "white")
+  .style("border", "solid")
+  .style("border-width", "1px")
+  .style("border-radius", "5px")
+  .style("padding", "10px");
+  
+// Tooltip content
+var hover_5y_ts_vaccine_points = function (d) {
+  tooltip_5y_ts
+  .html(
+  "<b>" +
+    d.Area +
+    ' - '+
+    d.Description +
+    ' - ' +
+    d.Year +
+    '</b><p>Proportion: <b>' +
+    d3.format('.1%')(d.Proportion) +
+    " </b>(95% CI: " +
+    d3.format('.1%')(d.Lower_CL) +
+    "-" +
+    d3.format('.1%')(d.Upper_CL) +
+    ')</p><p>There were <b>' +
+    d3.format(',.0f')(d.Numerator) +
+    ' vaccinations reported</b> for children aged ' +
+    d.Age + ' in this season with an estimated <b>' +
+    d3.format(',.0f')(d.Denominator - d.Numerator) +
+    ' children left to vaccinate</b>.'
+  )
+  .style("opacity", 1)
+  .style("top", event.pageY - 10 + "px")
+  .style("left", event.pageX + 10 + "px")
+  .style("visibility", "visible");
+  };
+  
+  // No matter which function was called, on mouseleave restore everything back to the way it was.
+  var mouseleave_5y_ts_vaccine = function (d) {
+    tooltip_5y_ts.style("visibility", "hidden");
+  };
+  
+
 // Group the data
 var vaccine_ts_5y_areas_group = d3
 .nest() 
@@ -1483,30 +1671,30 @@ var vaccine_ts_5y_areas_group = d3
 })
 .entries(chosen_ts_5_y_data);
 
-// Lines
-var lines_ts_5_y = svg_flu_uptake_timeseries_5_years
-.selectAll(".line")
-.data(vaccine_ts_5y_areas_group)
-.enter()
-// .transition()
-// .duration(1000)
-.append("path")
-.attr("id", "flu_lines")
-.attr("class", "flu_all_lines")
-.attr("stroke", function (d) {
-  return area_colours(d.key);
-})
-.attr("d", function (d) {
-  return d3
-    .line()
-    .x(function (d) {
-      return x_ts_5y(d.Year);
-    })
-    .y(function (d) {
-      return y_ts_5y(d.Proportion);
-    })(d.values);
-})
-.style("stroke-width", 1)
+// // Lines
+// var lines_ts_5_y = svg_flu_uptake_timeseries_5_years
+// .selectAll(".line")
+// .data(vaccine_ts_5y_areas_group)
+// .enter()
+// // .transition()
+// // .duration(1000)
+// .append("path")
+// .attr("id", "flu_lines")
+// .attr("class", "flu_all_lines")
+// .attr("stroke", function (d) {
+//   return area_colours(d.key);
+// })
+// .attr("d", function (d) {
+//   return d3
+//     .line()
+//     .x(function (d) {
+//       return x_ts_5y(d.Year);
+//     })
+//     .y(function (d) {
+//       return y_ts_5y(d.Proportion);
+//     })(d.values);
+// })
+// .style("stroke-width", 1)
 
 // points
 var dots_ts_5_y = svg_flu_uptake_timeseries_5_years
@@ -1529,10 +1717,13 @@ var dots_ts_5_y = svg_flu_uptake_timeseries_5_years
   return circle_size_function(d.Area);
 })
 .attr("stroke", function (d) {
-  return '#000';
+  return border_colour(d.Significance);
 })
-// .on("mouseover", hover_seasonsal_flu_vaccine_points)
-// .on("mouseout", mouseleave_seasonal_flu_vaccine);
+.attr("visibility", function (d) {
+  return visibility_function(d.Significance);
+})
+.on("mouseover", hover_5y_ts_vaccine_points)
+.on("mouseout", mouseleave_5y_ts_vaccine);
 
 function update_vaccine_5y_ts(){
 
@@ -1565,21 +1756,21 @@ var vaccine_ts_5y_areas_group = d3
 
 // TODO handle missing data
 
-lines_ts_5_y 
-.data(vaccine_ts_5y_areas_group)
-// .enter()
-.transition()
-.duration(1000)
-.attr("d", function (d) {
-  return d3
-    .line()
-    .x(function (d) {
-      return x_ts_5y(d.Year);
-    })
-    .y(function (d) {
-      return y_ts_5y(d.Proportion);
-    })(d.values);
-})
+// lines_ts_5_y 
+// .data(vaccine_ts_5y_areas_group)
+// // .enter()
+// .transition()
+// .duration(1000)
+// .attr("d", function (d) {
+//   return d3
+//     .line()
+//     .x(function (d) {
+//       return x_ts_5y(d.Year);
+//     })
+//     .y(function (d) {
+//       return y_ts_5y(d.Proportion);
+//     })(d.values);
+// })
 
 // points
 dots_ts_5_y
@@ -1598,6 +1789,12 @@ dots_ts_5_y
 })
 .attr("r", function (d) {
   return circle_size_function(d.Area);
+})
+.attr("stroke", function (d) {
+  return border_colour(d.Significance);
+})
+.attr("visibility", function (d) {
+  return visibility_function(d.Significance);
 })
 // .on("mouseover", hover_seasonsal_flu_vaccine_points)
 // .on("mouseout", mouseleave_seasonal_flu_vaccine);
