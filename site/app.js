@@ -959,8 +959,8 @@ var vaccine_ts_12m_items = d3
 })
 .keys();
 
-vaccine_ts_12m_items = ['Pneumococcal conjulate vaccine (PCV)']
-vaccine_ts_12m_items = ['DTaP/IPV/Hib/HepB vaccine*', 'Meningococcal group B', 'Rotavirus']
+// vaccine_ts_12m_items = ['Pneumococcal conjulate vaccine (PCV)']
+// vaccine_ts_12m_items = ['DTaP/IPV/Hib/HepB vaccine*', 'Meningococcal group B', 'Rotavirus']
 
 d3.select("#vaccine_12_month_uptake_timeseries_button")
   .selectAll("myOptions")
