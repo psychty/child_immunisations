@@ -369,11 +369,11 @@ for (var i = 0; i < gp_immunisations_data_12_months_vaccine_1.length; i++) {
         ' coverage for the ' +
         gp_immunisations_data_12_months_vaccine_1[i]['Term'] +  
         ' in this practice is <Strong>' + 
-        d3.format('.1%')(gp_immunisations_data_12_months_vaccine_1[i]['Proportion']) +
+        gp_immunisations_data_12_months_vaccine_1[i]['Proportion'] +
         ' </Strong> (based on an eligible population of ' +
         gp_immunisations_data_12_months_vaccine_1[i]['Denominator'] +
         ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
-        d3.format(',.0f')(gp_immunisations_data_12_months_vaccine_1[i]['Denominator'] - gp_immunisations_data_12_months_vaccine_1[i]['Numerator']) + 
+        gp_immunisations_data_12_months_vaccine_1[i]['Yet_to_receive'] + 
         '.' )
        .addTo(Annual_12_months_vaccine_1_group) // These markers are directly added to the layer group
       };
@@ -405,11 +405,11 @@ for (var i = 0; i < gp_immunisations_data_12_months_vaccine_1.length; i++) {
             ' coverage for the ' +
             gp_immunisations_data_12_months_vaccine_2[i]['Term'] +  
             ' in this practice is <Strong>' + 
-            d3.format('.1%')(gp_immunisations_data_12_months_vaccine_2[i]['Proportion']) +
+            gp_immunisations_data_12_months_vaccine_2[i]['Proportion'] +
             ' </Strong> (based on an eligible population of ' +
             gp_immunisations_data_12_months_vaccine_2[i]['Denominator'] +
             ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
-            d3.format(',.0f')(gp_immunisations_data_12_months_vaccine_2[i]['Denominator'] - gp_immunisations_data_12_months_vaccine_2[i]['Numerator']) + 
+            gp_immunisations_data_12_months_vaccine_2[i]['Yet_to_receive'] + 
             '.' )
            .addTo(Annual_12_months_vaccine_2_group) // These markers are directly added to the layer group
           };
@@ -440,12 +440,12 @@ for (var i = 0; i < gp_immunisations_data_12_months_vaccine_1.length; i++) {
                   ' coverage for the ' +
                   gp_immunisations_data_12_months_vaccine_3[i]['Term'] +  
                   ' in this practice is <Strong>' + 
-                  d3.format('.1%')(gp_immunisations_data_12_months_vaccine_3[i]['Proportion']) +
+                  gp_immunisations_data_12_months_vaccine_3[i]['Proportion'] +
                   ' </Strong> (based on an eligible population of ' +
                   gp_immunisations_data_12_months_vaccine_3[i]['Denominator'] +
-                  ' children).<br><br>According to available data, ' + 
-                  d3.format(',.0f')(gp_immunisations_data_12_months_vaccine_3[i]['Denominator'] - gp_immunisations_data_12_months_vaccine_3[i]['Numerator']) + 
-                  ' person/people were recorded as not receiving this vaccination.' )
+                  ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
+                  gp_immunisations_data_12_months_vaccine_3[i]['Yet_to_receive'] + 
+                  '.' )
                  .addTo(Annual_12_months_vaccine_3_group) // These markers are directly added to the layer group
                 };
             
@@ -474,12 +474,12 @@ for (var i = 0; i < gp_immunisations_data_12_months_vaccine_1.length; i++) {
                   ' coverage for the ' +
                   gp_immunisations_data_12_months_vaccine_4[i]['Term'] +  
                   ' in this practice is <Strong>' + 
-                  d3.format('.1%')(gp_immunisations_data_12_months_vaccine_4[i]['Proportion']) +
+                  gp_immunisations_data_12_months_vaccine_4[i]['Proportion'] +
                   ' </Strong> (based on an eligible population of ' +
                   gp_immunisations_data_12_months_vaccine_4[i]['Denominator'] +
-                  ' children).<br><br>According to available data, ' + 
-                  d3.format(',.0f')(gp_immunisations_data_12_months_vaccine_4[i]['Denominator'] - gp_immunisations_data_12_months_vaccine_4[i]['Numerator']) + 
-                  ' person/people were recorded as not receiving this vaccination.' )
+                  ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
+                  gp_immunisations_data_12_months_vaccine_4[i]['Yet_to_receive'] + 
+                  '.' )
                  .addTo(Annual_12_months_vaccine_4_group) // These markers are directly added to the layer group
                 };
             
@@ -556,11 +556,11 @@ for (var i = 0; i < gp_immunisations_data_24_months_vaccine_1.length; i++) {
         ' coverage for the ' +
         gp_immunisations_data_24_months_vaccine_1[i]['Term'] +  
         ' in this practice is <Strong>' + 
-        d3.format('.1%')(gp_immunisations_data_24_months_vaccine_1[i]['Proportion']) +
+        gp_immunisations_data_24_months_vaccine_1[i]['Proportion'] +
         ' </Strong> (based on an eligible population of ' +
         gp_immunisations_data_24_months_vaccine_1[i]['Denominator'] +
         ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
-        d3.format(',.0f')(gp_immunisations_data_24_months_vaccine_1[i]['Denominator'] - gp_immunisations_data_24_months_vaccine_1[i]['Numerator']) + 
+        gp_immunisations_data_24_months_vaccine_1[i]['Yet_to_receive'] + 
         '.' )
        .addTo(Annual_24_months_vaccine_1_group) // These markers are directly added to the layer group
       };
@@ -592,11 +592,11 @@ for (var i = 0; i < gp_immunisations_data_24_months_vaccine_1.length; i++) {
             ' coverage for the ' +
             gp_immunisations_data_24_months_vaccine_2[i]['Term'] +  
             ' in this practice is <Strong>' + 
-            d3.format('.1%')(gp_immunisations_data_24_months_vaccine_2[i]['Proportion']) +
+            gp_immunisations_data_24_months_vaccine_2[i]['Proportion'] +
             ' </Strong> (based on an eligible population of ' +
             gp_immunisations_data_24_months_vaccine_2[i]['Denominator'] +
             ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
-            d3.format(',.0f')(gp_immunisations_data_24_months_vaccine_2[i]['Denominator'] - gp_immunisations_data_24_months_vaccine_2[i]['Numerator']) + 
+            gp_immunisations_data_24_months_vaccine_2[i]['Yet_to_receive'] + 
             '.' )
            .addTo(Annual_24_months_vaccine_2_group) // These markers are directly added to the layer group
           };
@@ -626,12 +626,12 @@ for (var i = 0; i < gp_immunisations_data_24_months_vaccine_3.length; i++) {
       ' coverage for the ' +
       gp_immunisations_data_24_months_vaccine_3[i]['Term'] +  
       ' in this practice is <Strong>' + 
-      d3.format('.1%')(gp_immunisations_data_24_months_vaccine_3[i]['Proportion']) +
+      gp_immunisations_data_24_months_vaccine_3[i]['Proportion'] +
       ' </Strong> (based on an eligible population of ' +
       gp_immunisations_data_24_months_vaccine_3[i]['Denominator'] +
-      ' children).<br><br>According to available data, ' + 
-      d3.format(',.0f')(gp_immunisations_data_24_months_vaccine_3[i]['Denominator'] - gp_immunisations_data_24_months_vaccine_3[i]['Numerator']) + 
-      ' person/people were recorded as not receiving this vaccination.' )
+      ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
+      gp_immunisations_data_24_months_vaccine_3[i]['Yet_to_receive'] + 
+      '.' )
       .addTo(Annual_24_months_vaccine_3_group) // These markers are directly added to the layer group
     };
         
@@ -660,12 +660,12 @@ for (var i = 0; i < gp_immunisations_data_24_months_vaccine_4.length; i++) {
       ' coverage for the ' +
       gp_immunisations_data_24_months_vaccine_4[i]['Term'] +  
       ' in this practice is <Strong>' + 
-      d3.format('.1%')(gp_immunisations_data_24_months_vaccine_4[i]['Proportion']) +
+      gp_immunisations_data_24_months_vaccine_4[i]['Proportion'] +
       ' </Strong> (based on an eligible population of ' +
       gp_immunisations_data_24_months_vaccine_4[i]['Denominator'] +
-      ' children).<br><br>According to available data, ' + 
-      d3.format(',.0f')(gp_immunisations_data_24_months_vaccine_4[i]['Denominator'] - gp_immunisations_data_24_months_vaccine_4[i]['Numerator']) + 
-      ' person/people were recorded as not receiving this vaccination.' )
+      ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
+      gp_immunisations_data_24_months_vaccine_4[i]['Yet_to_receive'] + 
+      '.' )
       .addTo(Annual_24_months_vaccine_4_group) // These markers are directly added to the layer group
     };
 
@@ -695,12 +695,12 @@ for (var i = 0; i < gp_immunisations_data_24_months_vaccine_5.length; i++) {
     ' coverage for the ' +
     gp_immunisations_data_24_months_vaccine_5[i]['Term'] +  
     ' in this practice is <Strong>' + 
-    d3.format('.1%')(gp_immunisations_data_24_months_vaccine_5[i]['Proportion']) +
+    gp_immunisations_data_24_months_vaccine_5[i]['Proportion'] +
     ' </Strong> (based on an eligible population of ' +
     gp_immunisations_data_24_months_vaccine_5[i]['Denominator'] +
-    ' children).<br><br>According to available data, ' + 
-    d3.format(',.0f')(gp_immunisations_data_24_months_vaccine_5[i]['Denominator'] - gp_immunisations_data_24_months_vaccine_5[i]['Numerator']) + 
-    ' person/people were recorded as not receiving this vaccination.' )
+    ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
+    gp_immunisations_data_24_months_vaccine_5[i]['Yet_to_receive'] + 
+    '.' )
     .addTo(Annual_24_months_vaccine_5_group) // These markers are directly added to the layer group
   };
                       
@@ -775,11 +775,11 @@ for (var i = 0; i < gp_immunisations_data_5_years_vaccine_1.length; i++) {
       ' coverage for the ' +
       gp_immunisations_data_5_years_vaccine_1[i]['Term'] +  
       ' in this practice is <Strong>' + 
-      d3.format('.1%')(gp_immunisations_data_5_years_vaccine_1[i]['Proportion']) +
+      gp_immunisations_data_5_years_vaccine_1[i]['Proportion'] +
       ' </Strong> (based on an eligible population of ' +
       gp_immunisations_data_5_years_vaccine_1[i]['Denominator'] +
       ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
-      d3.format(',.0f')(gp_immunisations_data_5_years_vaccine_1[i]['Denominator'] - gp_immunisations_data_5_years_vaccine_1[i]['Numerator']) + 
+      gp_immunisations_data_5_years_vaccine_1[i]['Yet_to_receive'] + 
       '.' )
      .addTo(Annual_5_years_vaccine_1_group) // These markers are directly added to the layer group
     };
@@ -811,11 +811,11 @@ for (var i = 0; i < gp_immunisations_data_5_years_vaccine_1.length; i++) {
           ' coverage for the ' +
           gp_immunisations_data_5_years_vaccine_2[i]['Term'] +  
           ' in this practice is <Strong>' + 
-          d3.format('.1%')(gp_immunisations_data_5_years_vaccine_2[i]['Proportion']) +
+          gp_immunisations_data_5_years_vaccine_2[i]['Proportion'] +
           ' </Strong> (based on an eligible population of ' +
           gp_immunisations_data_5_years_vaccine_2[i]['Denominator'] +
           ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
-          d3.format(',.0f')(gp_immunisations_data_5_years_vaccine_2[i]['Denominator'] - gp_immunisations_data_5_years_vaccine_2[i]['Numerator']) + 
+          gp_immunisations_data_5_years_vaccine_2[i]['Yet_to_receive'] + 
           '.' )
          .addTo(Annual_5_years_vaccine_2_group) // These markers are directly added to the layer group
         };
@@ -845,12 +845,12 @@ for (var i = 0; i < gp_immunisations_data_5_years_vaccine_3.length; i++) {
     ' coverage for the ' +
     gp_immunisations_data_5_years_vaccine_3[i]['Term'] +  
     ' in this practice is <Strong>' + 
-    d3.format('.1%')(gp_immunisations_data_5_years_vaccine_3[i]['Proportion']) +
+    gp_immunisations_data_5_years_vaccine_3[i]['Proportion'] +
     ' </Strong> (based on an eligible population of ' +
     gp_immunisations_data_5_years_vaccine_3[i]['Denominator'] +
-    ' children).<br><br>According to available data, ' + 
-    d3.format(',.0f')(gp_immunisations_data_5_years_vaccine_3[i]['Denominator'] - gp_immunisations_data_5_years_vaccine_3[i]['Numerator']) + 
-    ' person/people were recorded as not receiving this vaccination.' )
+    ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
+    gp_immunisations_data_5_years_vaccine_3[i]['Yet_to_receive'] + 
+    '.' )
     .addTo(Annual_5_years_vaccine_3_group) // These markers are directly added to the layer group
   };
       
@@ -879,12 +879,12 @@ for (var i = 0; i < gp_immunisations_data_5_years_vaccine_4.length; i++) {
     ' coverage for the ' +
     gp_immunisations_data_5_years_vaccine_4[i]['Term'] +  
     ' in this practice is <Strong>' + 
-    d3.format('.1%')(gp_immunisations_data_5_years_vaccine_4[i]['Proportion']) +
+    gp_immunisations_data_5_years_vaccine_4[i]['Proportion'] +
     ' </Strong> (based on an eligible population of ' +
     gp_immunisations_data_5_years_vaccine_4[i]['Denominator'] +
-    ' children).<br><br>According to available data, ' + 
-    d3.format(',.0f')(gp_immunisations_data_5_years_vaccine_4[i]['Denominator'] - gp_immunisations_data_5_years_vaccine_4[i]['Numerator']) + 
-    ' person/people were recorded as not receiving this vaccination.' )
+    ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
+    gp_immunisations_data_5_years_vaccine_4[i]['Yet_to_receive'] + 
+    '.' )
     .addTo(Annual_5_years_vaccine_4_group) // These markers are directly added to the layer group
   };
 
@@ -913,12 +913,12 @@ new L.circleMarker([gp_immunisations_data_5_years_vaccine_5[i]['latitude'], gp_i
   ' coverage for the ' +
   gp_immunisations_data_5_years_vaccine_5[i]['Term'] +  
   ' in this practice is <Strong>' + 
-  d3.format('.1%')(gp_immunisations_data_5_years_vaccine_5[i]['Proportion']) +
+  gp_immunisations_data_5_years_vaccine_5[i]['Proportion'] +
   ' </Strong> (based on an eligible population of ' +
   gp_immunisations_data_5_years_vaccine_5[i]['Denominator'] +
-  ' children).<br><br>According to available data, ' + 
-  d3.format(',.0f')(gp_immunisations_data_5_years_vaccine_5[i]['Denominator'] - gp_immunisations_data_5_years_vaccine_5[i]['Numerator']) + 
-  ' person/people were recorded as not receiving this vaccination.' )
+  ' children).<br><br>According to available data, the number of children <Strong>recorded as not receiving this vaccination</Strong> is ' + 
+  gp_immunisations_data_5_years_vaccine_5[i]['Yet_to_receive'] + 
+  '.' )
   .addTo(Annual_5_years_vaccine_5_group) // These markers are directly added to the layer group
 };
                     

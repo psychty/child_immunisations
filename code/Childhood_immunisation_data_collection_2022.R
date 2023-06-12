@@ -490,7 +490,6 @@ Eng_201819_5_y_p <- read_excel("child_immunisations/data/Child_immunisation_LA_2
   left_join(Vaccination_terms_df, by = 'Item') %>% 
   mutate(Term = ifelse(Term == 'Measles, mumps, and rubella vaccine; first dose by 1 year', 'Measles, mumps, and rubella vaccine; first dose', ifelse(Term == 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by 2 years', 'Haemophilus influenzae type b/Meningococcal group C disease; booster dose by five years', Term)))
 
-
 LA_201819_5_y_p <- LA_201819_5_y_p %>% 
   bind_rows(Eng_201819_5_y_p) %>% 
   unique()
@@ -1107,7 +1106,28 @@ LA_annual_table_values %>%
   toJSON() %>% 
   write_lines(paste0(output_directory, '/LTLA_annual_table.json'))
 
+# Fixing missing data
+
 LA_annual_df %>% 
+  group_by(Area, Age, Description) %>% 
+  summarise(Records = n()) %>% 
+  View()
+
+LA_missing_24_m_menb_201718 <- LA_annual_df %>% 
+  filter(Age == '24 months',
+         Description == 'Meningococcal group B booster',
+         Year == '2018/19') %>% 
+  mutate(Year = '2017/18') %>% 
+  mutate(Benchmark = 'Missing',
+         Significance = 'Missing')
+
+
+LA_annual_df %>% 
+  mutate(Proportion = ifelse(Area == 'England' & Year == '2020/21' & Age == '12 months' & Item == 'PCV2' & is.na(Proportion), mean(c(.932,.938)),  ifelse(Area == 'West Sussex' & Year == '2020/21' & Age == '12 months' & Item == 'PCV2' & is.na(Proportion), mean(c(.958,.961)),  Proportion))) %>% 
+  mutate(Benchmark = ifelse(Year == '2020/21' & Age == '12 months' & Item == 'PCV2', 'Missing', Benchmark)) %>% 
+  mutate(Significance = ifelse(Year == '2020/21' & Age == '12 months' & Item == 'PCV2', 'Missing', Significance)) %>% 
+  bind_rows(LA_missing_24_m_menb_201718) %>% 
+  arrange(Area, Year, Item) %>% 
   toJSON() %>% 
   write_lines(paste0(output_directory, '/LTLA_annual.json'))
 
@@ -1353,7 +1373,9 @@ GP_201920_df <- GP_201920_df_raw %>%
   mutate(Proportion = Proportion / 100) %>% 
   mutate(Numerator = Denominator * Proportion) %>% 
   mutate(Year = '2019/20') %>% 
-  mutate(Benchmark = factor(ifelse(Denominator == 0, 'No eligible patients', ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)'))), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  mutate(Benchmark = ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)'))) %>% 
+  mutate(Benchmark = ifelse(is.na(Denominator), Benchmark, ifelse(Denominator == 0, 'No eligible patients', Benchmark))) %>% 
+  mutate(Benchmark = factor(Benchmark, levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, ODS_Code, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark)
   
 rm(GP_201920_df_raw, GP_201920_df_raw_1)
@@ -1387,7 +1409,9 @@ GP_202021_df <- GP_202021_df_raw %>%
   mutate(Proportion = Proportion / 100) %>% 
   mutate(Numerator = Denominator * Proportion) %>% 
   mutate(Year = '2020/21') %>% 
-  mutate(Benchmark = factor(ifelse(Denominator == 0, 'No eligible patients', ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)'))), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  mutate(Benchmark = ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)'))) %>% 
+  mutate(Benchmark = ifelse(is.na(Denominator), Benchmark, ifelse(Denominator == 0, 'No eligible patients', Benchmark))) %>% 
+  mutate(Benchmark = factor(Benchmark, levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, ODS_Code, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
 
@@ -1422,17 +1446,45 @@ GP_202122_df <- GP_202122_df_raw %>%
   mutate(Proportion = Proportion / 100) %>% 
   mutate(Numerator = Denominator * Proportion) %>% 
   mutate(Year = '2021/22') %>% 
-  mutate(Benchmark = factor(ifelse(Denominator == 0, 'No eligible patients', ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)'))), levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
+  mutate(Benchmark = ifelse(Proportion < .9, 'Low (<90%)', ifelse(Proportion < .95, 'Medium (90-95%)', 'High (95%+)'))) %>% 
+  mutate(Benchmark = ifelse(is.na(Denominator), Benchmark, ifelse(Denominator == 0, 'No eligible patients', Benchmark))) %>% 
+  mutate(Benchmark = factor(Benchmark, levels = c('Low (<90%)', 'Medium (90-95%)', 'High (95%+)', 'No eligible patients'))) %>% 
   select(Year, ODS_Code, Age, Item, Term, Numerator, Denominator, Proportion, Benchmark) %>% 
   mutate(Term = ifelse(Year == '2020/21' & Item == 'PCV2', 'PCV vaccine (pneumococcal disease; second dose - scheduling has since changed)', Term))
-
-
 
 GP_annual_df <- GP_201920_df %>% 
   bind_rows(GP_202021_df) %>% 
   bind_rows(GP_202122_df) 
 
-# Add GP name and geolocation ####
+# Add GP name and geolocation and PCN ####
+
+# PCN organisation data ####
+download.file('https://digital.nhs.uk/binaries/content/assets/website-assets/services/ods/data-downloads-other-nhs-organisations/epcn.zip', paste0(data_directory, '/epcn.zip'), mode = 'wb')
+unzip(paste0(data_directory, '/epcn.zip'), exdir = data_directory)
+
+Practice_to_PCN_lookup <- read_excel(paste0(data_directory, "/ePCN.xlsx"),
+                                     sheet = "PCN Core Partner Details") %>%
+  rename(ODS_Name = 'Partner\r\nName',
+         ODS_Code = 'Partner\r\nOrganisation\r\nCode') %>% 
+  mutate(ODS_Name = gsub('\\(Aic\\)', '\\(AIC\\)', gsub('\\(Acf\\)', '\\(ACF\\)', gsub('Pcn', 'PCN', gsub('And', 'and',  gsub(' Of ', ' of ',  str_to_title(ODS_Name))))))) %>% 
+  select(ODS_Code, ODS_Name, PCN_Code = 'PCN Code')
+
+PCN_data <- read_excel(paste0(data_directory, "/ePCN.xlsx"),
+                       sheet = 'PCNDetails') %>% 
+  rename(PCN_Code = 'PCN Code',
+         PCN_Name = 'PCN Name',
+         Open_date = 'Open Date',
+         Close_date = 'Close Date',
+         ICB_sub_Code = 'Current Sub ICB Loc Code',
+         ICB_sub_Name = 'Sub ICB Location') %>% 
+  mutate(Open_date = paste(substr(Open_date, 1,4), substr(Open_date, 5,6), substr(Open_date, 7,8), sep = '-')) %>% 
+  mutate(Open_date = as.Date(Open_date)) %>% 
+  mutate(Address_label = gsub(', NA','', paste(str_to_title(`Address Line 1`), str_to_title(`Address Line 2`),str_to_title(`Address Line 3`),str_to_title(`Address Line 4`), Postcode, sep = ', '))) %>% 
+  mutate(PCN_Name = gsub('\\(Aic\\)', '\\(AIC\\)', gsub('\\(Acf\\)', '\\(ACF\\)', gsub('Pcn', 'PCN', gsub('And', 'and',  gsub(' Of ', ' of ',  str_to_title(PCN_Name))))))) %>% 
+  select(PCN_Code, PCN_Name, Postcode, PCN_address_label = Address_label, ICB_sub_Code, ICB_sub_Name)
+
+GP_lookup <- Practice_to_PCN_lookup %>% 
+  left_join(PCN_data, by = 'PCN_Code')
 
 # download.file('https://files.digital.nhs.uk/assets/ods/current/epraccur.zip',
 #               paste0(data_directory, '/epraccur.zip'),
@@ -1478,8 +1530,52 @@ GP_annual_df_attempt_one %>%
 
 GP_annual_df_attempt_one %>% 
   filter(ODS_Code != 'V81999') %>% 
+  left_join(GP_lookup[c('ODS_Code', 'PCN_Code', 'PCN_Name')], by = 'ODS_Code', relationship = 'many-to-many') %>%
+  mutate(Yet_to_receive = ifelse(is.na(Denominator), 'Unknown', ifelse(Denominator == 0, 'None', paste0(format(Denominator - Numerator, big.mark = ','))))) %>% 
+  mutate(Proportion = ifelse(Denominator == 0, 'not applicable', paste0(round(Proportion *100, 1), '%')))  %>% 
   toJSON() %>% 
   write_lines(paste0(output_directory, '/GP_immunisations.json'))
+
+GP_annual_df_attempt_one %>% 
+  filter(ODS_Code != 'V81999') %>% 
+  left_join(GP_lookup[c('ODS_Code', 'PCN_Code', 'PCN_Name')], by = 'ODS_Code', relationship = 'many-to-many') %>% 
+  mutate(Yet_to_receive = ifelse(Denominator == 0, 'Unknown', paste0(format(Denominator - Numerator, big.mark = ',')))) %>% 
+  write.csv(., paste0(output_directory, '/GP_immunisations.csv'), row.names = FALSE, na = '')
+
+# Aggregate to PCN level - caveats
+
+# How many practices should be in a PCN
+PCN_meta <- GP_lookup %>% 
+  filter(str_detect(ICB_sub_Code, '70F')) %>% 
+  group_by(PCN_Code, PCN_Name) %>%  
+  summarise(Practices = n())
+
+PCN_immunisations <- GP_annual_df_attempt_one %>% 
+  filter(ODS_Code != 'V81999') %>% 
+  left_join(GP_lookup[c('ODS_Code', 'PCN_Code', 'PCN_Name')], by = 'ODS_Code', relationship = 'many-to-many')
+
+PCN_immunisations %>% 
+  group_by(Age, Item, Year, PCN_Code, PCN_Name) %>%
+  filter(!is.na(Denominator)) %>% 
+  summarise(Practices_w_denominator = n(),
+            Numerator = sum(Numerator, na.rm = TRUE),
+            Denominator = sum(Denominator, na.rm = TRUE)) %>% 
+  left_join(PCN_meta[c('PCN_Code', 'Practices')], by = 'PCN_Code') %>% 
+  mutate(Same = ifelse(Practices_w_denominator != Practices, 'This PCN does not include all practices', 'All practices')) %>% 
+  mutate(Proportion = ifelse(Same == 'This PCN does not include all practices', NA, Numerator / Denominator)) %>% 
+  toJSON() %>% 
+  write_lines(paste0(output_directory, '/PCN_immunisations.json'))
+
+PCN_immunisations %>% 
+  group_by(Age, Item, Year, PCN_Code, PCN_Name) %>%
+  filter(!is.na(Denominator)) %>% 
+  summarise(Practices_w_denominator = n(),
+            Numerator = sum(Numerator, na.rm = TRUE),
+            Denominator = sum(Denominator, na.rm = TRUE)) %>% 
+  left_join(PCN_meta[c('PCN_Code', 'Practices')], by = 'PCN_Code') %>% 
+  mutate(Same = ifelse(Practices_w_denominator != Practices, 'This PCN does not include all practices', 'All practices')) %>% 
+  mutate(Proportion = ifelse(Same == 'This PCN does not include all practices', NA, Numerator / Denominator)) %>% 
+  write.csv(., paste0(output_directory, '/PCN_immunisations.csv'), row.names = FALSE, na = '')
 
 areas <- c('Adur', 'Arun', 'Chichester', 'Crawley', 'Horsham', 'Mid Sussex', 'Worthing')
 
@@ -1572,9 +1668,6 @@ primary_school_df %>%
 
 PHEindicatormethods::phe_proportion(primary_school_df, x = Numerator, n = Denominator)[4]
 
-primary_school_df %>% 
-
-  
 
 flu_primary_uptake <- read_csv(paste0(data_directory,'/flu_primary_uptake.csv'),
                                col_types = cols(Numerator = col_double(), Denominator = col_double())) %>% 
@@ -1589,8 +1682,6 @@ flu_primary_uptake <- read_csv(paste0(data_directory,'/flu_primary_uptake.csv'),
   mutate(`September 2020 to January 2021` = replace_na(`September 2020 to January 2021`, '-')) %>% 
   mutate(`September 2021 to January 2022` = replace_na(`September 2021 to January 2022`, '-')) %>% 
   mutate(`September 2022 to January 2023` = replace_na(`September 2022 to January 2023`, '-')) 
-
-
 
 flu_primary_uptake %>% 
   toJSON() %>% 
